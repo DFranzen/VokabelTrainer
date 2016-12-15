@@ -1,0 +1,275 @@
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {
+            "res/xml/config.xml": {
+                "parents": {
+                    "/*": [
+                        {
+                            "xml": "<feature name=\"Whitelist\"><param name=\"android-package\" value=\"org.apache.cordova.whitelist.WhitelistPlugin\" /><param name=\"onload\" value=\"true\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"NetworkStatus\"><param name=\"android-package\" value=\"org.apache.cordova.networkinformation.NetworkManager\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"Device\"><param name=\"android-package\" value=\"org.apache.cordova.device.Device\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"Accelerometer\"><param name=\"android-package\" value=\"org.apache.cordova.devicemotion.AccelListener\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"StatusBar\"><param name=\"android-package\" value=\"org.apache.cordova.statusbar.StatusBar\" /><param name=\"onload\" value=\"true\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"Compass\"><param name=\"android-package\" value=\"org.apache.cordova.deviceorientation.CompassListener\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"Geolocation\"><param name=\"android-package\" value=\"org.apache.cordova.geolocation.Geolocation\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"Battery\"><param name=\"android-package\" value=\"org.apache.cordova.batterystatus.BatteryListener\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"Notification\"><param name=\"android-package\" value=\"org.apache.cordova.dialogs.Notification\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"SplashScreen\"><param name=\"android-package\" value=\"org.apache.cordova.splashscreen.SplashScreen\" /><param name=\"onload\" value=\"true\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"Camera\"><param name=\"android-package\" value=\"org.apache.cordova.camera.CameraLauncher\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"Contacts\"><param name=\"android-package\" value=\"org.apache.cordova.contacts.ContactManager\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"InAppBrowser\"><param name=\"android-package\" value=\"org.apache.cordova.inappbrowser.InAppBrowser\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"Vibration\"><param name=\"android-package\" value=\"org.apache.cordova.vibration.Vibration\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"File\"><param name=\"android-package\" value=\"org.apache.cordova.file.FileUtils\" /><param name=\"onload\" value=\"true\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"FileTransfer\"><param name=\"android-package\" value=\"org.apache.cordova.filetransfer.FileTransfer\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"Media\"><param name=\"android-package\" value=\"org.apache.cordova.media.AudioHandler\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"Capture\"><param name=\"android-package\" value=\"org.apache.cordova.mediacapture.Capture\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"Globalization\"><param name=\"android-package\" value=\"org.apache.cordova.globalization.Globalization\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"FileChooser\"><param name=\"android-package\" value=\"com.cesidiodibenedetto.filechooser.FileChooser\" /></feature>",
+                            "count": 1
+                        }
+                    ],
+                    "/widget": [
+                        {
+                            "xml": "<feature name=\"FileChooser\"><param name=\"android-package\" value=\"com.megster.cordova.FileChooser\" /></feature>",
+                            "count": 1
+                        }
+                    ]
+                }
+            },
+            "AndroidManifest.xml": {
+                "parents": {
+                    "/*": [
+                        {
+                            "xml": "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\" />",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\" />",
+                            "count": 2
+                        },
+                        {
+                            "xml": "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\" />",
+                            "count": 2
+                        },
+                        {
+                            "xml": "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" />",
+                            "count": 5
+                        },
+                        {
+                            "xml": "<uses-permission android:name=\"android.permission.READ_CONTACTS\" />",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<uses-permission android:name=\"android.permission.WRITE_CONTACTS\" />",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<uses-permission android:name=\"android.permission.GET_ACCOUNTS\" />",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<uses-permission android:name=\"android.permission.RECORD_AUDIO\" />",
+                            "count": 2
+                        },
+                        {
+                            "xml": "<uses-permission android:name=\"android.permission.MODIFY_AUDIO_SETTINGS\" />",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<uses-permission android:name=\"android.permission.READ_PHONE_STATE\" />",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<uses-permission android:name=\"android.permission.RECORD_VIDEO\" />",
+                            "count": 1
+                        }
+                    ],
+                    "/manifest": [
+                        {
+                            "xml": "<uses-permission android:name=\"android.permission.VIBRATE\" />",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\" />",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" />",
+                            "count": 1
+                        }
+                    ],
+                    "/manifest/application": [
+                        {
+                            "xml": "<activity android:enabled=\"@bool/use_activity\" android:exported=\"true\" android:icon=\"@drawable/ic_chooser\" android:label=\"@string/choose_file\" android:name=\"com.ipaulpro.afilechooser.FileChooserActivity\"><intent-filter><action android:name=\"android.intent.action.GET_CONTENT\" /><category android:name=\"android.intent.category.DEFAULT\" /><category android:name=\"android.intent.category.OPENABLE\" /><data android:mimeType=\"*/*\" /></intent-filter></activity>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<provider android:authorities=\"com.ianhanniballake.localstorage.documents\" android:enabled=\"@bool/use_provider\" android:exported=\"true\" android:grantUriPermissions=\"true\" android:name=\"com.ianhanniballake.localstorage.LocalStorageProvider\" android:permission=\"android.permission.MANAGE_DOCUMENTS\"><intent-filter><action android:name=\"android.content.action.DOCUMENTS_PROVIDER\" /></intent-filter></provider>",
+                            "count": 1
+                        }
+                    ]
+                }
+            },
+            "res/values/strings.xml": {
+                "parents": {
+                    "/*": [
+                        {
+                            "xml": "<string name=\"empty_directory\">Empty Directory</string>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<string name=\"storage_removed\">Storage was removed or unmounted.</string>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<string name=\"choose_file\">Select a file</string>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<string name=\"chooser_title\">File Browser</string>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<string name=\"error_selecting_file\">Error selecting File</string>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<string name=\"internal_storage\">Internal storage</string>",
+                            "count": 1
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "installed_plugins": {
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-console": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-network-information": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-device": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-device-motion": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-statusbar": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-device-orientation": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-geolocation": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-battery-status": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-dialogs": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-splashscreen": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-camera": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-contacts": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-inappbrowser": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-vibration": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-file": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-file-transfer": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-media": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-media-capture": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-globalization": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "com.cesidiodibenedetto.filechooser": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "com.megster.cordova.FileChooser": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        }
+    },
+    "dependent_plugins": {}
+}

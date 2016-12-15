@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+    <!-- This is a wide open CSP declaration. To lock this down for production, see below. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src *" />
+    <!-- Good default declaration:
+    * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
+    * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+    * Disables use of eval() and inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+        * Enable inline JS: add 'unsafe-inline' to default-src
+        * Enable eval(): add 'unsafe-eval' to default-src
+    * Create your own at http://cspisawesome.com
+    -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: 'unsafe-inline' https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; media-src *" /> -->
+
+    <link rel="stylesheet" type="text/css" href="css/index.css" />
+    <script id="appSource"  type="text/javascript" src="js/index.js"></script>
+    <script id="list" type="text/javascript" src="js/list.js"></script>
+    <script id="dragend" type="text/javascript" src="js/dragend.js"></script>
+    <script id="cordovaLib" type="text/javascript" src="cordova.js" onerror="app.onDeviceReady()")></script>
+
+    <title>Vokabel Trainer</title>
+</head>
+
+<body id="body">
+  <div class="app">
+    <div id="MenuHeader" onclick="app.loadTest()" class="Menu"><div id="MenuCaption">Choose your Files</div></div>
+    <div id="Lection"    onclick="app.fontTest()" class="Training">
+      <img id="ImageMenu" src="res/menu.png" alt="Menu"/>
+      Lection: <div id="LectionID"></div>
+    </div>
+
+    
+    <div id="Box0Div" class="boxDiv Training"> <div style="width:100%,height:100%"> <div> <div id="Box0" class="box">0</div> </div></div></div>
+    <div id="Box1Div" class="boxDiv Training"> <div style="width:100%,height:100%"> <div> <div id="Box1" class="box">0</div> </div></div></div>
+    <div id="Box2Div" class="boxDiv Training"> <div style="width:100%,height:100%"> <div> <div id="Box2" class="box">0</div> </div></div></div>
+    <div id="Box3Div" class="boxDiv Training"> <div style="width:100%,height:100%"> <div> <div id="Box3" class="box">0</div> </div></div></div>
+    <div id="Box4Div" class="boxDiv Training"> <div style="width:100%,height:100%"> <div> <div id="Box4" class="box">0</div> </div></div></div>
+    
+    <!-- Training view -->
+    <div id="questionDiv" class="Training">
+      <div id="questionContainer">
+	<div id="question" class="Training">
+	</div>
+      </div>
+      <div id="questionLine"> </div>
+    </div>
+    <div id="question_border" class="Training">
+      <div class="questionLineSmall" style="top:20%"> </div>
+      <div class="questionLineSmall" style="top:40%"> </div>
+      <div class="questionLineSmall" style="top:60%"> </div>
+      <div class="questionLineSmall" style="top:80%"> </div>
+    </div>
+    
+    <div id="answerArea">
+      <div id="swipeArea" class="Training">
+	<div id="prevAnswer" class="dragend-page"> </div>
+	<div id="answerDiv" class="Training  dragend-page">
+	  <div id="answerContainer">
+	    <div id="answer"  class="Training">
+	    </div>
+	  </div>
+	</div>
+	<div id="postAnswer" class="dragend-page"> </div>
+      </div>
+      <div id="coverDiv" class="Training" onclick="app.revealAnswer()">
+	<div id="coverContainer">
+	  <div id="cover">
+	  </div>
+	</div>
+      </div>
+    </div>
+    
+    <button id="ButtonCorrect" class="Training" onclick="app.ButtonCorrect_onClick()">
+      <div id="ContainerCorrect" class="centerContainer">
+	<img id="ImageCorrect" class="centerElement" src="res/tick.png" alt="Correct"/>
+      </div>
+    </button>
+    <button id="ButtonWrong"   class="Training" onclick="app.ButtonWrong_onClick()"  >
+      <div id="ContainerWrong" class="centerContainer">
+	<img id="ImageWrong" class="centerElement" src="res/cross.png" alt="Wrong"/>
+      </div>
+    </button>
+    
+    
+    <!-- Main menu -->
+    <div id="menuBackground" class="Menu">
+    
+      <div id="listArea" class="Menu">
+	<div id="listRecent" class="List Menu">
+	</div>
+      </div>
+    </div>
+    
+    <button id="ButtonLoad"  class="Menu" onclick="app.ButtonLoad_onClick()" >
+      <div id="ContainerLoad" class="centerContainer">
+	<img id="ImageLoad" class="centerElement" src="res/plus.png" alt="Add File"/>
+      </div>
+    </button>
+    <button id="ButtonStart" class="Menu" onclick="app.ButtonStart_onClick()" >
+      <div id="ContainerStart" class="centerContainer">
+	<img id="ImageStart" class="centerElement" src="res/arrow.png" alt="Start"/>
+      </div>
+    </button>
+    
+    <div id="preview" class="Menu" onclick="app.preview_onClick()">
+      <div id="questionDiv">
+	<div id="questionContainer">
+	  <div id="prev_question">
+	  </div>
+	</div>
+	<div id="questionLine"> </div>
+      </div>
+      <div id="question_border">
+	<div class="questionLineSmall" style="top:20%"> </div>
+	<div class="questionLineSmall" style="top:40%"> </div>
+	<div class="questionLineSmall" style="top:60%"> </div>
+	<div class="questionLineSmall" style="top:80%"> </div>
+      </div>
+      <div id="answerArea">
+	<div id="answerDiv">
+	  <div id="answerContainer">
+	    <div id="prev_answer">
+	    </div>
+	  </div>
+	</div>
+      </div>
+      <img id="ImageSwitch" src="res/switch.png"/>
+    </div>
+    <div id="veil" class="Details">
+      <div id="dialog" class="Details">
+	<div id="dialogHeader"></div>
+	<div id="dialogBackground"></div>
+	<div id="ChooserPannel"></div>
+	<div id="InfoChooser" class="DialogChooser">Information</div>
+	<div id="OptionChooser" class="DialogChooser">Options</div>
+
+	<div id="InfoContent" class="Details DialogTab">
+	  <b>Full path:</b> <p id="dialogFullPath"></p><br>
+	  <b>Added:</b> <p id="dialogAdded"></p><br>
+	  <b>Last used</b> <p id="dialogUsed"></p><br>
+	  <b>Words: </b><span id="dialogCount"></span><br><br>
+	  <b>Progress: </b><span id="dialogProgressPercent"> </span> learned <p id="dialogProgress"></p><br>
+	</div>
+	<div id="OptionContent" class="Details DialogTab">
+	  <div id="dialogRemove" class="DialogButton">
+	    Remove file from list
+	  </div>
+	  <div id="dialogRevert" class="DialogButton">
+	    Swap languages
+	  </div>
+	  <div id="dialogReset" class="DialogButton">
+	    Reset Progress
+	  </div>
+	</div>
+	<div id="dialogBack" class="DialogButton">
+	  Back
+	</div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

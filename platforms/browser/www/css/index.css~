@@ -1,0 +1,642 @@
+* {
+    -webkit-tap-highlight-color: rgba(0,0,0,0); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
+}
+
+@font-face
+{
+    font-family: 'LocalArial';
+    src:url('../res/Arial.ttf') format('truetype');
+}
+
+body {
+    -webkit-touch-callout: none;  /* prevent callout to copy image, etc when tap to hold */
+    -webkit-text-size-adjust: none;  /* prevent webkit from resizing text to fit */
+    -webkit-user-select: none;  /* prevent copy paste, to allow, change 'none' to 'text' */
+    background-color:#E4E4E4;
+    font-family:'LocalArial','HelveticaNeue-Light', 'HelveticaNeue', Helvetica, Arial, sans-serif;
+    font-size:12px;
+    margin:0px;
+    padding:0px;
+    width:100%;
+    heigth:100%;
+}
+
+/* Portrait layout (default) */
+.app {
+    height:100%;                   /* text area height */
+    width:100%;                   /* text area width */
+    text-align:center;
+}
+
+/* Landscape layout (with min-width) */
+@media screen and (min-aspect-ratio: 1/1) and (min-width:400px) {
+    .app {
+        background-position:left center;
+    }
+}
+
+#question_border {
+    position:absolute;
+    font-size:400%;
+    top:40%;
+    left:10%;
+    height:20%;
+    width:80%;
+    background-color:#fcff66;
+}
+
+#questionDiv {
+    position:absolute;
+    top:10%;
+    left:10%;
+    height:30%;
+    width:80%;
+    background-color:#fcff66;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#question {
+    font-size:600%;
+    height:auto;
+    width:auto;
+    display:inline;
+}
+
+#prev_question {
+    font-size:600%;
+    height:auto;
+    width:auto;
+    display:inline;
+}
+
+
+#questionLine
+{
+    position:absolute;
+    width:90%;
+    height: 2pt;
+    top:80%;
+    left:5%;
+    background-color:#ff4040;
+}
+
+.questionLineSmall
+{
+    position:absolute;
+    width:90%;
+    left:5%;
+    height: 1pt;
+    background-color:#000000;
+}
+
+
+.Training {
+    visibility:hidden;
+}
+
+#answerArea
+{
+    position:absolute;
+    overflow:hidden;
+    top:40%;
+    left:17%;
+    height:55%;
+    width:66%;
+}
+
+#swipeArea {
+    position:absolute;
+    overflow:hidden;
+    top:0%;
+    left:0%;
+    height:100%;
+    width:100%;
+}
+
+#answerDiv {
+    width:100%;
+    height: 100%;
+    background-color:#efef20;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#answer {
+    font-size:600%;
+    height:auto;
+    width:auto;
+    display:inline;
+}
+
+#coverDiv {
+    position:absolute;
+    top:0%;
+    left:0%;
+    height:100%;
+    width:100%;
+    
+    background-color:#efef20;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#cover {
+    font-size:600%;
+    height:auto;
+    width:auto;
+    display:inline;
+}
+
+#prev_answer {
+    font-size:600%;
+    height:auto;
+    width:auto;
+    display:inline;
+}
+
+
+#ButtonCorrect {
+    position:absolute;
+    top: 60%;
+    left: 85%;
+    height: 30%;
+    width: 15%;
+
+    background-color: #00FF00;
+    border-top-left-radius: 40%;
+    border-bottom-left-radius: 40%;
+    font-size:400%;
+}
+
+#ButtonWrong {
+    position:absolute;
+    top: 60%;
+    left: 0%;
+    height: 30%;
+    width: 15%;
+    font-size:400%;
+
+    background-color: #FF0000;
+    border-top-right-radius: 40%;
+    border-bottom-right-radius: 40%;
+
+}
+
+.centerContainer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.centerElement {
+    display: inline;
+}    
+
+#ImageCorrect {
+    width: 60%;
+    margin-left: auto;
+    margin-right:0;
+}
+
+#ImageWrong {
+    width:60%;
+    margin-right: auto;
+    margin-left: 0;
+}
+
+#ImageMenu
+{
+    position:absolute;
+    top:0%;
+    left:0%;
+    height: 100%;
+    width:auto;
+    padding:2pt;
+    box-sizing: border-box;
+}
+
+.boxDiv {
+    position:absolute;
+    border-radius: 5pt;
+    font-size: 200%;
+    top: 5%;
+    height: 5%;
+    width: 8%;
+    padding-bottom:3%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.box
+{
+    display:inline;
+}
+
+#MenuHeader
+{
+    position: absolute;
+    background-color: #FFA500;
+    top:0%;
+    left:0%;
+    width: 100%;
+    height: 6em;
+}
+
+#MenuCaption
+{
+    position: absolute:
+    top: 0%;
+    left:0%;
+    width:60%;
+    padding: 1em;
+    font-size:200%;
+}
+		
+#Box0Div
+{
+    left: 22%;
+    background-color: #e0a8a8;
+}
+#Box1Div
+{
+    left: 34%;
+    background-color: #e0c4a8;
+}
+#Box2Div
+{
+    left: 46%;
+    background-color: #e0dfa8;
+}
+#Box3Div
+{
+    left: 58%;
+    background-color: #cde0a8;
+}
+#Box4Div
+{
+    left: 70%;
+    background-color: #b7e0a8;
+}
+
+#menuBackground
+{
+    position: absolute;
+    background-color:#E4E4E4;
+    top:10%;
+    left:0%;
+    width:100%;
+    height:90%;
+}
+
+#ButtonStart {
+    position: absolute;
+    bottom: 5%;
+    right: 5%;
+    width: 6em;
+    height: 6em;
+    background-color: #03e000;
+    border-radius:50%;
+}
+
+#ButtonLoad {
+    position: absolute;
+    bottom: 5%;
+    left: 5%;
+    width: 6em;
+    height: 6em;
+    background-color: #1c23ea;
+    border-radius:50%
+}
+
+#ImageLoad
+{
+    width:100%;
+    height:100%;
+}
+
+#ImageStart
+{
+    width:100%;
+    height:100%;
+}
+
+#listArea
+{
+    position:absolute;
+    top:15%;
+    left:0%;
+    width: 100%;
+    height: 85%;
+    overflow: scroll;
+}
+
+#listRecent
+{
+    position:absolute;
+    top:0%;
+    left:0%;
+    width: 100%;
+    height: 100%;
+}
+
+.listElement
+{
+    width:100%;
+    height: 4em;
+    text-align: left;
+    padding: 1em;
+    box-sizing: border-box;
+    position:relative;
+}
+
+.listElementEven
+{
+    background-color: #bcbcbc;
+}
+.listElementSelected
+{
+    background-color: #002d77;
+    color:white;
+}
+
+.listElementEvenSelected
+{
+    background-color: #0043af;
+    color : white;
+}
+
+.List
+{
+    
+}
+
+.listStatusIcon
+{
+    position:absolute;
+    top:0.5em;
+    left:0.5em;
+    height: 3em;
+    width:3em;
+    display:inline-flex;
+    flex-direction: row;
+    border-radius:3px;
+    overflow:hidden;
+}
+
+.listStatusPercent
+{
+    position:absolute;
+    top:1.5em;
+    left:1em;
+    height:2em;
+    width:2em;
+}
+
+.listStatusLayer
+{
+    height:auto;
+    width:auto;
+    display:inline;
+}
+
+.listCaption
+{
+    position:absolute;
+    font-size: 200%;
+    text-align: left;
+    top:0.5em;
+    left:2em;
+    display:inline;
+}
+
+#Lection {
+    position:relative;
+    top: 0%;
+    left: 0%;
+    width: 100%;
+    height: 6em;
+    background-color: #dfdfdf;
+}
+
+#ButtonMenu {
+    position:absolute;
+    top: 1%;
+    left: 1%;
+    height: 100%;
+    background-color: #c0c0c0;
+    visibility:hidden;
+}
+
+#preview
+{
+    opacity: 0.8;
+    position:absolute;
+    top: 0%;
+    left: 60%;
+    width: 40%;
+    height: 40%;
+}
+
+#ImageSwitch
+{
+    position: absolute;
+    width: 20%;
+    height: auto;
+    top:38%;
+    left: 40%;
+}
+
+@keyframes fade {
+    from { opacity: 1.0; }
+    50% { opacity: 0.4; }
+    to { opacity: 1.0; }
+}
+ 
+@-webkit-keyframes fade {
+    from { opacity: 1.0; }
+    50% { opacity: 0.4; }
+    to { opacity: 1.0; }
+}
+
+.longpress {
+    -webkit-animation: 1s longpress;
+            animation: 1s longpress;
+}
+
+@-webkit-keyframes longpress {
+    100% { background: #4c4c4c; }
+}
+
+@keyframes longpress {
+    100% { background: #4c4c4c; }
+}
+
+.DialogChooser
+{
+    font-size:150%;
+    position: absolute;
+    box-sizing: border-box;
+    width: 50%;
+    top: 2.5em;
+    padding: 0.75em;
+    border-top-left-radius: 0.5em;
+    border-top-right-radius: 0.5em;
+    text-align:center;
+}
+
+.DialogChooserSelected
+{
+    background-color: #fcff66;
+}
+
+#ChooserPannel
+{
+    font-size:150%;
+    position:absolute;
+    box-sizing: border-box;
+    top:2.5em;
+    left:0%;
+    width:100%;
+    height:2.5em;
+    padding: 0.75em;
+    background-color:#9f9f9f;
+}
+
+#InfoChooser
+{
+    left: 0%;
+}
+
+#OptionChooser
+{
+    left:50%;
+}
+
+#veil
+{
+    position: absolute;
+    top: 0%;
+    left:0%;
+    width:100%;
+    height:100%;
+    background-color: rgba(84,84,84,0.8);
+    visibility: hidden;
+}
+
+#dialog
+{
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width:80%;
+    height: 80%;
+    padding: 5%;
+    box-sizing: border-box;
+    background-color: #FFA500;
+    text-align:left;
+}
+
+#dialogBackground
+{
+    font-size:200%;
+    position:absolute;
+    top:2em;
+    bottom:0em;
+    left:0%;
+    right:0%;
+    background-color: #fcff66;
+}
+
+#dialogHeader
+{
+    position: absolute;
+    top:0%;
+    left:0%;
+    font-size: 200%;
+    text-align:center;
+    width:100%;
+    height: 2em;
+    line-height:2em;
+
+    box-sizing:border-box;
+    background-color: #FFA500;
+}
+
+.DialogTab
+{
+    position:absolute;
+    left:0%;
+    right:0%;
+    top:7em;
+    bottom: 4em;
+    padding: 1em;
+    box-sizing:border-box;
+    overflow: auto;
+    background-color: #fcff66;
+}
+
+#dialogProgress
+{
+    height: 3em;
+    display:inline-flex;
+    flex-direction: row;
+    border-radius:3px;
+    overflow:hidden;
+    width:100%;
+}
+
+.DialogButton
+{
+    position: absolute;
+    height: 2em;
+    line-height: 2em;
+    text-align: center;
+    font-size: 200%;
+    width: 90%;
+    left: 5%;
+    border-radius: 0.3em;
+    border-style: solid;
+    border-witdh: 5px;
+    border-color: black;
+    box-sizing: border-box;
+}
+
+.DialogButton:active {
+    background-color: rgba(50,50,50,0.8);
+}
+
+#dialogBack
+{
+    bottom:0.5em;
+}
+
+#dialogRemove
+{
+    top: 1em;
+}
+
+#dialogRevert
+{
+    top: 4em;
+}
+
+#dialogReset
+{
+    top:7em;
+}
+
+#cancel
+{
+    position: absolute;
+    top:80%;
+    right:5%;
+    width: 40%;
+    height: 15%;
+}
