@@ -22,22 +22,10 @@
         }
     },
     "installed_plugins": {
-        "cordova-plugin-battery-status": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
-        "cordova-plugin-camera": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
         "cordova-plugin-console": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         },
-        "cordova-plugin-contacts": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
         "cordova-plugin-device": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
-        "cordova-plugin-device-motion": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         },
         "cordova-plugin-device-orientation": {
@@ -52,22 +40,10 @@
         "cordova-plugin-file-transfer": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         },
-        "cordova-plugin-geolocation": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
         "cordova-plugin-globalization": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         },
         "cordova-plugin-inappbrowser": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
-        "cordova-plugin-media": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
-        "cordova-plugin-media-capture": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
-        "cordova-plugin-network-information": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         },
         "cordova-plugin-splashscreen": {
@@ -76,16 +52,37 @@
         "cordova-plugin-statusbar": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         },
-        "cordova-plugin-vibration": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
         "cordova-plugin-whitelist": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         },
-        "com.cesidiodibenedetto.filechooser": {
+        "cordova-plugin-document-contract": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         },
-        "com.megster.cordova.FileChooser": {
+        "cordova-plugin-battery-status": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-camera": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-media-capture": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-contacts": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-device-motion": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-media": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-network-information": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-vibration": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "com.dfranzen.cordova.FileStorage": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         }
     },

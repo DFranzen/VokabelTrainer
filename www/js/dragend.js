@@ -23,8 +23,7 @@
  * SOFTWARE.
  *
  */
-
- ;(function( window ) {
+;(function( window ) {
   "use strict";
 
   // help the minifier

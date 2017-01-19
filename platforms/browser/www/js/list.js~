@@ -365,7 +365,7 @@ var listAPI =
 	    listElement.onclick = function(){listAPI.clickHandler(id)};//
 
 	    activateLongpress(listElement,id);
-	    //listElement.addEventListener("dblclick",function(){listAPI.onlongclick(id)});
+//	    listElement.addEventListener("dblclick",function(){listAPI.onlongclick(id)});
 	    
 	    document.getElementById("listRecent").appendChild(listElement);
 
