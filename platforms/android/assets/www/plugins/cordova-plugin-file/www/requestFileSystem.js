@@ -19,7 +19,6 @@ cordova.define("cordova-plugin-file.requestFileSystem", function(require, export
  * under the License.
  *
 */
-
 (function() {
     //For browser platform: not all browsers use this file.
     function checkBrowser() {
@@ -49,9 +48,7 @@ cordova.define("cordova-plugin-file.requestFileSystem", function(require, export
     var requestFileSystem = function(type, size, successCallback, errorCallback) {
         argscheck.checkArgs('nnFF', 'requestFileSystem', arguments);
         var fail = function(code) {
-            if (errorCallback) {
-                errorCallback(new FileError(code));
-            }
+            errorCallback && errorCallback(new FileError(code));
         };
 
         if (type < 0) {

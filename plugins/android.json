@@ -7,43 +7,33 @@
         "files": {}
     },
     "installed_plugins": {
+        "com.dfranzen.cordova.FileStorage": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-console": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-device": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-dialogs": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
         "cordova-plugin-document-contract": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         },
-        "cordova-plugin-battery-status": {
+        "cordova-plugin-globalization": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         },
-        "cordova-plugin-camera": {
+        "cordova-plugin-splashscreen": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         },
-        "cordova-plugin-media-capture": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
-        "cordova-plugin-contacts": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
-        "cordova-plugin-device-motion": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
-        "cordova-plugin-media": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
-        "cordova-plugin-network-information": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
-        "cordova-plugin-vibration": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
-        "com.dfranzen.cordova.FileStorage": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        }
-    },
-    "dependent_plugins": {
-        "cordova-plugin-compat": {
+        "cordova-plugin-whitelist": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         },
         "cordova-plugin-file": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         }
-    }
+    },
+    "dependent_plugins": {}
 }
