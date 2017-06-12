@@ -10,6 +10,7 @@ var Dragend = window.Dragend;
 var listAPI = window.listAPI;
 var dialog = window.dialog;
 var cordova = window.cordova;
+var editDialog;
 
 var app = {
     swipe: null,
@@ -75,6 +76,7 @@ var app = {
     initialize: function () {
         'use strict';
         document.addEventListener('deviceready', app.onDeviceReady, false);
+        
     },
 
     // deviceready Event Handler
@@ -103,6 +105,7 @@ var app = {
         listAPI.init();
         
         dialog.init();
+        editDialog.init();
     },
     updatePreview: function (id, toggled) {
         'use strict';
@@ -322,6 +325,20 @@ var app = {
         app.deactivateButtonCorrect();
         app.deactivateButtonWrong();
     },
+    /* update the displays for the word and its translation (if already revealed)
+     */
+    updateWord: function () {
+        'use strict';
+        if (document.getElementById("coverDiv").style.visibility === "hidden") {
+            app.revealAnswer();
+        }
+        var question = (!app.reverse)
+            ? app.currentWord.word
+            : app.currentWord.translation;
+        document.getElementById("question").innerHTML = question;
+        app.matchFont("question");
+            
+    },
     activateButtonCorrect: function () {
         'use strict';
         document.getElementById("ButtonCorrect").disabled = false;
@@ -362,15 +379,9 @@ var app = {
         app.currentWord = app.words[app.currentBox][wordID];
         app.words[app.currentBox].splice(wordID, 1);
 
-        app.updateBoxes();
-
-        question = (!app.reverse)
-            ? app.currentWord.word
-            : app.currentWord.translation;
-        document.getElementById("question").innerHTML = question;
-        app.matchFont("question");
-
         app.hideAnswer();
+        app.updateBoxes();
+        app.updateWord();
     },
     onRotate: function () {
         'use strict';
@@ -495,6 +506,7 @@ var app = {
 
         app.hideView("Training");
         app.hideView("Menu");
+        app.hideView("edit");
 
         app.showView(view);
         app.currentView = view;
@@ -638,10 +650,11 @@ var app = {
     ButtonLoad_onClick: function () {
         'use strict';
         window.fileStorage.open(function (uri) {
-            window.alert("Gotten uri " + uri);
             window.listAPI.add(uri, true);
         }, function (error) {
-            window.alert("Error Opening file: " + error);
+	    if (error !== 0) {
+		window.alert("Error Opening file: " + error);
+	    }
         });
             
         /*    var filePath = uri.filepath,
@@ -747,6 +760,88 @@ var app = {
         default:
             window.alert("No pause behaviour defined for view " + app.currentView);
         }
+    }
+};
+
+editDialog = {
+    init: function () {
+        'use strict';
+        editDialog.activateLongpress(document.getElementById("questionDiv"));
+        document.getElementById("questionDiv").addEventListener("dblclick", function () {
+            editDialog.show();
+        });
+    },
+    show: function () {
+        'use strict';
+        var answer;
+
+        app.revealAnswer();
+        app.showView("edit");
+        document.getElementById("editQuestionField").style.fontSize = document.getElementById("question").style.fontSize;
+        document.getElementById("editAnswerField").style.fontSize = document.getElementById("answer").style.fontSize;
+        answer = document.getElementById("answer").innerHTML;
+        document.getElementById("editAnswerField").value = answer.replace("<br>", ",");
+        document.getElementById("editQuestionField").value = document.getElementById("question").innerHTML;
+        
+    },
+    close: function () {
+        'use strict';
+
+	var question = document.getElementById("editQuestionField").value;
+	var answer = document.getElementById("editAnswerField").value;
+	
+        app.currentWord.word = app.reverse ? answer : question;
+        app.currentWord.translation = app.reverse ? question : answer;
+        app.updateWord();
+        app.hideView("edit");
+    },
+    longpress: false,
+    presstimer: null,
+    longtarget: null,
+    activateLongpress: function (node) {
+        'use strict';
+        node.addEventListener("touchstart", editDialog.start);
+        node.addEventListener("click", editDialog.click);
+        node.addEventListener("touchend", editDialog.cancel);
+        node.addEventListener("touchleave", editDialog.cancel);
+        node.addEventListener("touchcancel", editDialog.cancel);
+    },
+    start: function (e) {
+        'use strict';
+        
+        if (e.type === "click" && e.button !== 0) {
+            return;
+        }
+        editDialog.longpress = false;
+        document.getElementById("app").classList.add("greyedOut");
+
+        editDialog.presstimer = setTimeout(function () {
+            editDialog.presstimer = null;
+            editDialog.show();
+            editDialog.longpress = true;
+        }, 1200);
+        return false;
+    },
+    click:  function (e) {
+        'use strict';
+        if (editDialog.presstimer !== null) {
+            clearTimeout(editDialog.presstimer);
+            editDialog.presstimer = null;
+        }
+
+        document.getElementById("app").classList.remove("greyedOut");
+
+        if (editDialog.longpress) {
+            return false;
+        }
+    },
+    cancel: function (e) {
+        'use strict';
+        if (editDialog.presstimer !== null) {
+            clearTimeout(editDialog.presstimer);
+            editDialog.presstimer = null;
+        }
+        document.getElementById("app").classList.remove("greyedOut");
     }
 };
 

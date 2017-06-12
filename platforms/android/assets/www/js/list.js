@@ -3,75 +3,12 @@ var FileReader;
 var listAPI;
 var dialog;
 
-
-var longpress = false;
-var presstimer = null;
-var longtarget = null;
-
-var cancel = function (e) {
-    'use strict';
-    if (presstimer !== null) {
-        clearTimeout(presstimer);
-        presstimer = null;
-    }
-
-    this.classList.remove("longpress");
-};
-
-var click = function (e) {
-    'use strict';
-    if (presstimer !== null) {
-        clearTimeout(presstimer);
-        presstimer = null;
-    }
-
-    this.classList.remove("longpress");
-
-    if (longpress) {
-        return false;
-    }
-};
-
-var start = function (id) {
-    'use strict';
-    return function (e) {
-        window.console.log(e);
-
-        if (e.type === "click" && e.button !== 0) {
-            return;
-        }
-
-        longpress = false;
-
-        this.classList.add("longpress");
-
-        presstimer = setTimeout(function () {
-            presstimer = null;
-            listAPI.onlongclick(id);
-            longpress = true;
-        }, 700);
-
-        return false;
-    };
-};
-
-
-function activateLongpress(node, id) {
-    'use strict';
-    //    node.addEventListener("mousedown", start(id));
-    node.addEventListener("touchstart", start(id));
-    node.addEventListener("click", click);
-    //    node.addEventListener("mouseout", cancel);
-    node.addEventListener("touchend", cancel);
-    node.addEventListener("touchleave", cancel);
-    node.addEventListener("touchcancel", cancel);
-}
-
 var listAPI = {
     elements: [],
     data: {},
     parsed: {},
     divider: {},
+    notAvail: {},
     lastClicked: "",
     /* Initialises the API */
     init: function () {
@@ -173,9 +110,9 @@ var listAPI = {
         return result;
     },
     /* converts a String line into a word object */
-    parseWord: function (line) {
+    parseWord: function (line,divider) {
         'use strict';
-        var pair = line.split(app.divider);
+        var pair = line.split(divider);
         if (pair.length === 2) {
             window.console.log("Read: word: " + pair[0] + ",translation: " + pair[1]);
             return {word: pair[0].trim(), translation: pair[1].trim()};
@@ -183,6 +120,53 @@ var listAPI = {
             window.console.log("Read error processing preview " + line);
             return {};
         }
+    },
+    getDivider: function (lines) {
+	'use strict';
+	var candidates = [],
+	    word = "",
+	    letters = [],
+	    i,j,
+	    length,min,
+	    divider = ";"; //default
+
+	for (i = 0; i<lines.length; i += 1) {
+	    word = lines[i];
+	    letters = [];
+	    if (word === "-") continue;
+	    for (j = 0; j<word.length; j += 1) {
+		letters[word[j]] = (letters[word[j]] | 0) + 1;
+	    }
+	    if (i === 0) {
+		candidates = letters;
+		continue;
+	    }
+	    length = 0;
+	    for (var cand in candidates) {
+		if (candidates.hasOwnProperty(cand)) {
+		    if (letters.hasOwnProperty(cand)) {
+			length += 1;
+			divider = cand;
+			candidates[cand] += letters[cand];
+		    } else {
+			delete candidates[cand];
+		    }
+		}
+	    }
+	    if (length === 1) {
+		return divider;
+	    } else if (length === 0) {
+		return divider; //from last round
+	    }
+	}
+	min = 0;
+	for (var cand in candidates) {
+	    if ( (min === 0) || (min > candidates[cand])) {
+		min = candidates[cand];
+		divider = cand;
+	    }
+	}
+	return divider;
     },
     /* converts the contents of a file into boxes
      *  data: contents of the file
@@ -195,21 +179,25 @@ var listAPI = {
             box = 0,
             i,
             lines = data.split("\n"),
-            newWord;
+            newWord,
+	    divider;
 
+	divider = listAPI.getDivider(lines); //listAPI.getDivider(lines);
+	
         for (i = 0; i < lines.length; i += 1) {
             if (lines[i].trim() === "-") {
                 box = (box >= 4)
                     ? 4
                     : box + 1;
             } else {
-                newWord = listAPI.parseWord(lines[i]);
+                newWord = listAPI.parseWord(lines[i],divider);
                 newWord.file = fileName;
                 if (newWord.word !== undefined) {
                     back[box].push(newWord);
                 }
             }
         }
+	back["divider"] = divider;
         return back;
     },
     /* extracts the fileName from a full URL */
@@ -271,6 +259,7 @@ var listAPI = {
     withParsed: function (id, ready) {
         'use strict';
         var fileName = id,
+	    parsed,
             ready_data;
         if (typeof fileName === "number") {
             fileName = listAPI.elements[fileName].value;
@@ -278,8 +267,11 @@ var listAPI = {
 
         if (listAPI.parsed[fileName] === undefined) {
             ready_data = function (data) {
-                listAPI.parsed[fileName] = listAPI.parseFile(fileName, data);
-                listAPI.divider[fileName] = ";";
+		
+		parsed = listAPI.parseFile(fileName, data);
+                listAPI.divider[fileName] = parsed["divider"];
+		delete parsed["divider"];
+		listAPI.parsed[fileName] = parsed;
                 ready(listAPI.parsed[fileName]);
             };
             listAPI.withData(fileName, ready_data);
@@ -288,7 +280,6 @@ var listAPI = {
         }
         return;
     },
-
     /* reads in a file and passes it to the callback function
      *   fileName: uri of a fileName in the list
      *             if this is "test" a test set is passed to the callback function instead
@@ -305,11 +296,21 @@ var listAPI = {
                 + "حُمّى" + app.divider + "Fieber\nبوْل" + app.divider + "Urin\nعمود فقري" + app.divider + "Wirbelsäule\nصدر / صدور" + app.divider + "Brust\nعضو / أعضاء" + app.divider + "Körperteil, Organ\nشفه / شفاه" + app.divider + "Lippe\nعُنُق / أعناق" + app.divider + "Hals";
             ready(listAPI.data[fileName]);
         } else {
+	    if (listAPI.notAvail[fileName] === true) {
+		ready("");
+	    }
             window.fileStorage.readFromUri(function (data) {
                 listAPI.data[fileName] = data;
                 ready(listAPI.data[fileName]);
             }, function (error) {
-                window.alert("Error while reading file: " + error);
+		if (error.includes("ENOENT") || error.includes("Missing file") ) {
+		    //window.alert("File " + fileName + "could not be found");
+		    listAPI.notAvail[fileName] = true;
+		    listAPI.data[fileName] = "";
+		    ready("");
+		} else {
+                    window.alert("Error while reading file: " + error);
+		}
             }, fileName);
         }
         return;
@@ -463,10 +464,17 @@ var listAPI = {
             classname,
             listElement = document.createElement("div"),
             status  = document.createElement("div"),
-            statusPercent = document.createElement("div");
+            statusPercent = document.createElement("div"),
+	    fileName;
+
+
+	fileName = element.value;
 
         caption.innerHTML = element.caption;
         caption.className = "listCaption";
+	if (listAPI.notAvail[fileName]) {
+	    caption.classList.add("listCaptionNA");
+	}
 
         status.className = "listStatusIcon";
         statusPercent.className = "listStatusPercent";
@@ -491,7 +499,7 @@ var listAPI = {
             listAPI.clickHandler(id);
         };
 
-        activateLongpress(listElement, id);
+        dialog.activateLongpress(listElement, id);
         listElement.addEventListener("dblclick", function () {
             listAPI.onlongclick(id);
         });
@@ -523,7 +531,14 @@ var listAPI = {
             total += boxes[i].length;
         }
 
-        percentNode.innerHTML = Math.floor(progress / total) + "%";
+	if (total !== 0) {
+            percentNode.innerHTML = Math.floor(progress / total) + "%";
+	    percentNode.classList.remove("listStatusPercentWarn");
+	} else {
+	    percentNode.innerHTML = "!";
+	    percentNode.classList.add("listStatusPercentWarn");
+	    percentNode.parentNode.style.color = "grey";
+	}
         //	    node.innerHTML = boxes[0].length;
         //	    node.style.backgroundColor = color[0];
     },
@@ -613,7 +628,13 @@ dialog = {
         document.getElementById("dialogHeader").style.lineHeight = 2 / fontSize * 200 + "em";
 
 
-        document.getElementById("dialogFullPath").innerHTML = listAPI.elements[id].value;
+	var fileName = listAPI.elements[id].value;
+        document.getElementById("dialogFullPath").innerHTML = fileName;
+	if (listAPI.notAvail[fileName]) {
+	    var fileNameMessage = fileName + "<br><p style='color:red'>This file is not available, please add it again</p>";
+	    document.getElementById("dialogFullPath").innerHTML = fileNameMessage;
+	}
+	
         document.getElementById("dialogAdded").innerHTML = listAPI.getAdded(id);
         document.getElementById("dialogUsed").innerHTML = listAPI.getUsed(id);
         listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
@@ -628,7 +649,7 @@ dialog = {
         });
 
         document.getElementById("dialogBack").onclick = dialog.hide;
-        document.getElementById("veil").onclick = dialog.hide;
+        document.getElementById("dialogVeil").onclick = dialog.hide;
         document.getElementById("dialog").onclick = function (event) {
             event.stopPropagation();
         };
@@ -675,5 +696,68 @@ dialog = {
             divs[i].style.visibility = "inherit";
         }
         dialog.showTab("InfoContent", "InfoChooser");
+    },
+    
+    longpress: false,
+    presstimer: null,
+    longtarget: null,
+
+    cancel: function (e) {
+        'use strict';
+        if (dialog.presstimer !== null) {
+            clearTimeout(dialog.presstimer);
+            dialog.presstimer = null;
+        }
+
+        this.classList.remove("longpress");
+    },
+
+    click: function (e) {
+        'use strict';
+        if (dialog.presstimer !== null) {
+            clearTimeout(dialog.presstimer);
+            dialog.presstimer = null;
+        }
+
+        this.classList.remove("longpress");
+
+        if (dialog.longpress) {
+            return false;
+        }
+    },
+
+    start: function (id) {
+        'use strict';
+        return function (e) {
+            window.console.log(e);
+
+            if (e.type === "click" && e.button !== 0) {
+                return;
+            }
+
+            dialog.longpress = false;
+
+            this.classList.add("longpress");
+
+            dialog.presstimer = setTimeout(function () {
+                dialog.presstimer = null;
+                listAPI.onlongclick(id);
+                dialog.longpress = true;
+            }, 700);
+
+            return false;
+        };
+    },
+
+    activateLongpress: function (node, id) {
+        'use strict';
+        //    node.addEventListener("mousedown", start(id));
+        node.addEventListener("touchstart", dialog.start(id));
+        node.addEventListener("click", dialog.click);
+        //    node.addEventListener("mouseout", cancel);
+        node.addEventListener("touchend", dialog.cancel);
+        node.addEventListener("touchleave", dialog.cancel);
+        node.addEventListener("touchcancel", dialog.cancel);
     }
+
 };

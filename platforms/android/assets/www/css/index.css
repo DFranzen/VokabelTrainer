@@ -8,6 +8,10 @@
     src:url('../res/Arial.ttf') format('truetype');
 }
 
+html {
+    width:100%;
+    height:100%;
+}
 body {
     -webkit-touch-callout: none;  /* prevent callout to copy image, etc when tap to hold */
     -webkit-text-size-adjust: none;  /* prevent webkit from resizing text to fit */
@@ -18,7 +22,7 @@ body {
     margin:0px;
     padding:0px;
     width:100%;
-    heigth:100%;
+    height:100%;
     --color-header:    #FFA500;
     --color-cardfront: #FCFF66;
     --color-cardback:  #EFEF20;
@@ -46,6 +50,20 @@ body {
     .app {
         background-position:left center;
     }
+}
+
+.greyedOut {
+   /*background-color: rgba(84,84,84,0.8);*/
+    -webkit-animation: 2000ms greyedOut;
+            animation: 2000ms greyedOut;
+}
+
+@-webkit-keyframes greyedOut {
+    100% { background-color: rgba(84,84,84,0.8); }
+}
+
+@keyframes greyedOut {
+    100% { background: rgba(84,84,84,0.8); }
 }
 
 #question_border {
@@ -107,6 +125,10 @@ body {
 
 
 .Training {
+    visibility:hidden;
+}
+
+.edit {
     visibility:hidden;
 }
 
@@ -173,6 +195,17 @@ body {
     display:inline;
 }
 
+#ButtonFinish {
+    position:absolute;
+    top: 80%;
+    left: 0%;
+    height: 20%;
+    width: 100%;
+
+    background-color: green;
+    border-radius: 1em;
+    font-size:400%;
+}
 
 #ButtonCorrect {
     position:absolute;
@@ -413,6 +446,17 @@ body {
     width:2em;
 }
 
+.listStatusPercentWarn
+{
+    color: red;
+    text-align: center;
+    font-size: 2em;
+    top: 0.75em;
+    left: 0.5em;
+    height: 1em;
+    width: 1em;
+}
+
 .listStatusLayer
 {
     height:auto;
@@ -428,6 +472,11 @@ body {
     top:0.5em;
     left:2em;
     display:inline;
+}
+
+.listCaptionNA
+{
+    color: grey;
 }
 
 #Lection {
@@ -522,6 +571,43 @@ body {
     background-color: #bcbcbc;
 }
 
+#editVeil
+{
+    position: absolute;
+    top: 0%;
+    left:0%;
+    width:100%;
+    height:100%;
+    background-color: rgba(84,84,84,0.8);
+    visibility: hidden;
+}
+
+#editAnswer {
+    position: absolute;
+    top:40%;
+    left:17%;
+    height:55%;
+    width:66%;
+    background-color: #EFEF20;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#editQuestion {
+    position:absolute;
+    top:5em;
+    border: 1em;
+    left:10%;
+    width:80%;
+    bottom:60%;
+    background-color: #FCFF66;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
 #InfoChooser
 {
     left: 0%;
@@ -532,7 +618,7 @@ body {
     left:50%;
 }
 
-#veil
+#dialogVeil
 {
     position: absolute;
     top: 0%;
