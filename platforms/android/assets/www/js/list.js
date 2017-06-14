@@ -126,23 +126,32 @@ var listAPI = {
 	var candidates = [],
 	    word = "",
 	    letters = [],
+	    letter,
 	    i,j,
+	    init = true,
 	    length,min,
 	    divider = ";"; //default
 
 	for (i = 0; i<lines.length; i += 1) {
 	    word = lines[i];
+	    //window.alert("searching in " + word);
 	    letters = [];
-	    if (word === "-") continue;
+	    if ( (word.length <=2) ) continue;
 	    for (j = 0; j<word.length; j += 1) {
-		letters[word[j]] = (letters[word[j]] | 0) + 1;
+		letter = word[j];
+		if (letter === "\r") continue;
+		if (letter === " ") continue;
+		if (letter === "\n") continue;
+		letters[letter] = (letters[letter] | 0) + 1;
 	    }
-	    if (i === 0) {
+	    if (init) {
 		candidates = letters;
+		init = false;
 		continue;
 	    }
 	    length = 0;
 	    for (var cand in candidates) {
+		//window.alert("considering " + JSON.stringify(cand));
 		if (candidates.hasOwnProperty(cand)) {
 		    if (letters.hasOwnProperty(cand)) {
 			length += 1;
@@ -154,8 +163,11 @@ var listAPI = {
 		}
 	    }
 	    if (length === 1) {
+		window.alert("divider found early " + divider);
 		return divider;
 	    } else if (length === 0) {
+		window.alert("Just considered " + word);
+		window.alert("No divider found, using " + divider);
 		return divider; //from last round
 	    }
 	}
@@ -166,6 +178,7 @@ var listAPI = {
 		divider = cand;
 	    }
 	}
+	window.alert("Found divider" + divider);
 	return divider;
     },
     /* converts the contents of a file into boxes
@@ -182,7 +195,9 @@ var listAPI = {
             newWord,
 	    divider;
 
+	window.alert("Searching for divider");
 	divider = listAPI.getDivider(lines); //listAPI.getDivider(lines);
+	window.alert("Found divider " + divider);
 	
         for (i = 0; i < lines.length; i += 1) {
             if (lines[i].trim() === "-") {
