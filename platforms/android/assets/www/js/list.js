@@ -163,11 +163,11 @@ var listAPI = {
 		}
 	    }
 	    if (length === 1) {
-		window.alert("divider found early " + divider);
+//		window.alert("divider found early " + divider);
 		return divider;
 	    } else if (length === 0) {
-		window.alert("Just considered " + word);
-		window.alert("No divider found, using " + divider);
+//		window.alert("Just considered " + word);
+//		window.alert("No divider found, using " + divider);
 		return divider; //from last round
 	    }
 	}
@@ -178,7 +178,7 @@ var listAPI = {
 		divider = cand;
 	    }
 	}
-	window.alert("Found divider" + divider);
+//	window.alert("Found divider" + divider);
 	return divider;
     },
     /* converts the contents of a file into boxes
@@ -195,9 +195,9 @@ var listAPI = {
             newWord,
 	    divider;
 
-	window.alert("Searching for divider");
+//	window.alert("Searching for divider");
 	divider = listAPI.getDivider(lines); //listAPI.getDivider(lines);
-	window.alert("Found divider " + divider);
+//	window.alert("Found divider " + divider);
 	
         for (i = 0; i < lines.length; i += 1) {
             if (lines[i].trim() === "-") {
