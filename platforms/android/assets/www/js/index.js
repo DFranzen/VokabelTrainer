@@ -1,7 +1,5 @@
 /* Todo-list
- *  - Autodetect separator
  * *** Ideas
- *  - Edit vokabelListen
  *  - picture vokabelListen
  *  - localise
  */
@@ -11,6 +9,13 @@ var listAPI = window.listAPI;
 var dialog = window.dialog;
 var cordova = window.cordova;
 var editDialog;
+
+var loc_string = {
+    revision_start_caption: "Congratulation",
+    revision_start_message: "You have learned all your words. Now we start repetition mode",
+    revision_end_caption: "Complete",
+    revision_end_message: "You have finished your revision. Now practise the words you did not know"
+};
 
 var app = {
     swipe: null,
@@ -83,27 +88,36 @@ var app = {
     //
     onDeviceReady: function () {
         'use strict';
+
+	var elements = [];
+	// app starts in ListView
         app.activateMenu();
-        //get recent files
-        // localStorage.
+
+	// initialise Swipe
         app.swipe = new Dragend(document.getElementById("swipeArea"), {
             pageClass: "dragend-page",
             direction: "horizontal",
             onSwipeEnd: app.moveSwipe
         });
 
+	// listen to Android events
         document.addEventListener("backbutton", app.backButton_onClick);
         document.addEventListener("pause", app.onPause);
-        //orientationchange
         window.addEventListener("orientationchange", app.onRotate);
-        document.getElementById("ImageMenu").addEventListener("click", app.ButtonMenu_onClick);
 
+	// load saved values
         if (localStorage.getItem('recentFiles') !== null) {
-            listAPI.elements = JSON.parse(localStorage.getItem('recentFiles'));
+            elements =  JSON.parse(localStorage.getItem('recentFiles'));
         }
+	if (localStorage.getItem('reverse') !== null) {
+	    app.reverse = localStorage.getItem('reverse');
+	}
+	
+	// initialise List view
         listAPI.onclick = app.updatePreview;
-        listAPI.init();
-        
+        listAPI.init(elements);
+
+	//initialise Dialogs
         dialog.init();
         editDialog.init();
     },
@@ -282,9 +296,10 @@ var app = {
     needNewBox: function () {
         'use strict';
         if (app.revisionMode) {
-            window.console.log("Testing revision condition: " + app.words[4].length);
-            if (app.words[4].length === 0) {
+            window.console.log("Testing revision condition: " + app.revisionBox.length);
+            if (app.revisionBox.length === 0) {
                 window.console.log("Revision is over");
+		window.alert(loc_string.revision_end_caption+"\n"+loc_string.revision_end_message);
                 // Revision is over
                 app.deactivateRevision();
 
@@ -367,7 +382,8 @@ var app = {
         'use strict';
         
         var question,
-            wordID;
+            wordID,
+	    words;
         
         if (app.needNewBox()) {
             app.findNextBox();
@@ -375,9 +391,14 @@ var app = {
 
         window.console.log("Getting new word");
 
-        wordID = Math.floor(Math.random() * app.words[app.currentBox].length);
-        app.currentWord = app.words[app.currentBox][wordID];
-        app.words[app.currentBox].splice(wordID, 1);
+	if (app.revisionMode) {
+	    words = app.revisionBox;
+	} else {
+	    words = app.words[app.currentBox];
+	}
+        wordID = Math.floor(Math.random() * words.length);
+        app.currentWord = words[wordID];
+        words.splice(wordID, 1);
 
         app.hideAnswer();
         app.updateBoxes();
@@ -425,7 +446,7 @@ var app = {
         var dest;
         
         if (app.revisionMode) {
-            app.revisionBox.push(app.currentWord);
+	    app.words[4].push(app.currentWord);
         } else {
             dest = (app.currentBox < 4)
                 ? app.currentBox + 1
@@ -462,14 +483,16 @@ var app = {
     },
     activateRevision: function () {
         'use strict';
-        var i;
+
+	window.alert(loc_string.revision_start_caption+"\n"+loc_string.revision_start_message);
         window.console.log("Activating Revision");
         app.revisionMode = true;
         app.waitingList.popAll();
 
-        for (i = 1; i <= 3; i = i + 1) {
-            document.getElementById("Box" + i + "Div").style.backgroundColor = "#a0a0a0";
-        }
+	app.revisionBox = app.words[4];
+	app.words[4] = [];
+
+	app.updateBoxes();
     },
     deactivateRevision: function () {
         'use strict';
@@ -527,13 +550,18 @@ var app = {
             box[i] = app.words[i].length;
         }
         app.waitingList.simulatePopAll(box);
-        
-        if (app.currentWord.word) {
-            box[app.currentBox] += 1;
+
+	if (!app.revisionMode) {
+            if (app.currentWord.word) {
+		box[app.currentBox] += 1;
+            }
+	}
+
+        if ((!app.revisionMode) && (box[0] + box[1] + box[2] + box[3] === 0)) {
+            app.activateRevision();
+	    box[4]=0;
         }
-
-        box[4] += app.revisionBox.length;
-
+	
         for (i = 0; i < 5; i += 1) {
             document.getElementById("Box" + i).innerHTML = box[i];
             document.getElementById("Box" + i).style.fontWeight = "normal";
@@ -541,16 +569,18 @@ var app = {
             app.matchFont("Box" + i);
         }
         if (app.revisionMode) {
-            for (i = 1; i <= 3; i += 1) {
-                document.getElementById("Box" + i + "Div").style.backgroundColor = "#a0a0a0";
-            }
-        }
-        document.getElementById("Box" + app.currentBox).style.fontWeight = "bold";
-        document.getElementById("Box" + app.currentBox + "Div").style.backgroundColor = "#fcff66";
+	    document.getElementById("Box" + 1 + "Div").style.backgroundColor = "#a0a0a0";
+	    document.getElementById("Box" + 3 + "Div").style.backgroundColor = "#a0a0a0";
 
-        if ((!app.revisionMode) && (box[0] + box[1] + box[2] + box[3] === 0)) {
-            app.activateRevision();
-        }
+	    //show revision Box in the Middle
+            document.getElementById("Box" + 2).style.fontWeight = "bold";
+            document.getElementById("Box" + 2 + "Div").style.backgroundColor = "#fcff66";
+	    document.getElementById("Box" + 2).innerHTML = app.revisionBox.length+1;
+        } else {
+            document.getElementById("Box" + app.currentBox).style.fontWeight = "bold";
+            document.getElementById("Box" + app.currentBox + "Div").style.backgroundColor = "#fcff66";
+	}
+
     },
     writeBoxes: function () {
         'use strict';
@@ -561,6 +591,7 @@ var app = {
         app.words[app.currentBox].push(app.currentWord);
         app.currentWord = {};
 
+	//11235
         app.words[4] = app.words[4].concat(app.revisionBox);
         app.revisionBox = [];
     },
@@ -568,6 +599,7 @@ var app = {
         'use strict';
         var i,
             result = "";
+	//11235
         for (i = 0; i < 4; i += 1) {
             result += app.boxToString(fileName, i);
             result += "-\n";
@@ -651,6 +683,7 @@ var app = {
         'use strict';
         window.fileStorage.open(function (uri) {
             window.listAPI.add(uri, true);
+	    app.updatePreview(0,false);
         }, function (error) {
 	    if (error !== 0) {
 		window.alert("Error Opening file: " + error);
@@ -663,6 +696,9 @@ var app = {
             //app.fileNames = [uri.filepath];
         });*/
     },
+    /* sorts all words from the Boxes, the revision box and the current words into files
+     * returns: dictionary with one entry per file name containing a 5 Box array each
+     */
     sortBoxes: function () {
         'use strict';
 
@@ -734,6 +770,7 @@ var app = {
     preview_onClick: function () {
         'use strict';
         app.reverse = !app.reverse;
+        localStorage.setItem('reverse',app.reverse);	
         app.showPreview();
     },
     backButton_onClick: function () {
@@ -784,7 +821,7 @@ editDialog = {
         document.getElementById("editQuestionField").value = document.getElementById("question").innerHTML;
         
     },
-    close: function () {
+    save: function () {
         'use strict';
 
 	var question = document.getElementById("editQuestionField").value;
@@ -793,7 +830,10 @@ editDialog = {
         app.currentWord.word = app.reverse ? answer : question;
         app.currentWord.translation = app.reverse ? question : answer;
         app.updateWord();
-        app.hideView("edit");
+	editDialog.close();
+    },
+    close: function () {
+	app.hideView("edit");
     },
     longpress: false,
     presstimer: null,

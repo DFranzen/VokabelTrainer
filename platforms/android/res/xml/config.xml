@@ -12,21 +12,11 @@
     <feature name="DocumentContract">
         <param name="android-package" value="com.danjarvis.documentcontract.DocumentContract" />
     </feature>
-    <feature name="Globalization">
-        <param name="android-package" value="org.apache.cordova.globalization.Globalization" />
-    </feature>
-    <feature name="SplashScreen">
-        <param name="android-package" value="org.apache.cordova.splashscreen.SplashScreen" />
-        <param name="onload" value="true" />
-    </feature>
-    <feature name="Whitelist">
-        <param name="android-package" value="org.apache.cordova.whitelist.WhitelistPlugin" />
-        <param name="onload" value="true" />
-    </feature>
     <feature name="File">
         <param name="android-package" value="org.apache.cordova.file.FileUtils" />
         <param name="onload" value="true" />
     </feature>
+    <allow-navigation href="cdvfile:*" />
     <name>VokabelTrainer</name>
     <description>
       Vokabel Trainer inspired by index cards

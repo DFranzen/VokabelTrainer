@@ -41,30 +41,6 @@ module.exports = [
         ]
     },
     {
-        "id": "cordova-plugin-globalization.GlobalizationError",
-        "file": "plugins/cordova-plugin-globalization/www/GlobalizationError.js",
-        "pluginId": "cordova-plugin-globalization",
-        "clobbers": [
-            "window.GlobalizationError"
-        ]
-    },
-    {
-        "id": "cordova-plugin-globalization.globalization",
-        "file": "plugins/cordova-plugin-globalization/www/globalization.js",
-        "pluginId": "cordova-plugin-globalization",
-        "clobbers": [
-            "navigator.globalization"
-        ]
-    },
-    {
-        "id": "cordova-plugin-splashscreen.SplashScreen",
-        "file": "plugins/cordova-plugin-splashscreen/www/splashscreen.js",
-        "pluginId": "cordova-plugin-splashscreen",
-        "clobbers": [
-            "navigator.splashscreen"
-        ]
-    },
-    {
         "id": "cordova-plugin-file.DirectoryEntry",
         "file": "plugins/cordova-plugin-file/www/DirectoryEntry.js",
         "pluginId": "cordova-plugin-file",
@@ -242,14 +218,12 @@ module.exports.metadata =
 // TOP OF METADATA
 {
     "com.dfranzen.cordova.FileStorage": "0.0.1",
+    "cordova-plugin-compat": "1.1.0",
     "cordova-plugin-console": "1.0.4",
     "cordova-plugin-device": "1.1.3",
     "cordova-plugin-dialogs": "1.2.1",
     "cordova-plugin-document-contract": "0.4.1",
-    "cordova-plugin-globalization": "1.0.4",
-    "cordova-plugin-splashscreen": "3.2.2",
-    "cordova-plugin-whitelist": "1.2.2",
-    "cordova-plugin-file": "4.1.1"
+    "cordova-plugin-file": "4.3.3"
 };
 // BOTTOM OF METADATA
 });

@@ -11,8 +11,10 @@ var listAPI = {
     notAvail: {},
     lastClicked: "",
     /* Initialises the API */
-    init: function () {
+    init: function (elements) {
         'use strict';
+	if (elements === null) elements = [];
+	listAPI.elements = elements;
         listAPI.untoggleAll();
         listAPI.show();
     },
@@ -403,10 +405,8 @@ var listAPI = {
     add: function (uri, selected) {
         'use strict';
         var added = Date.now(),
-            caption = (uri === "test")
-                ? "test 123456789"
-                : this.getFileName(uri),
             i,
+	    add_helper,
             used = Date.now();
 
         for (i = 0; i < this.elements.length; i += 1) {
@@ -416,9 +416,28 @@ var listAPI = {
                 this.remove(i);
             }
         }
-        this.elements.unshift({caption: caption, value: uri, selected: selected, added: added, used: used});
-        localStorage.setItem("recentFiles", JSON.stringify(listAPI.elements));
-        this.show();
+	
+	add_helper = function(name) {
+	    listAPI.elements.unshift({caption: name, value: uri, selected: selected, added: added, used: used});
+	    localStorage.setItem("recentFiles", JSON.stringify(listAPI.elements));
+            listAPI.show();
+	    //app.updatePreview(0,false);
+	}
+
+	
+	if (uri === "test") {
+	    add_helper("test 123456789");
+	} else {
+	    window.fileStorage.getNameFromUri(
+		add_helper,
+		function(err) {
+		    var caption=listAPI.getFileName(uri);
+		    window.alert("Error accessing FileName: " + caption);
+		    add_helper(caption);
+		},
+		uri
+	    );
+	}
     },
     touch: function (element) {
         'use strict';

@@ -30,8 +30,8 @@
     <body id="body">
         <div class="app" id="app">
             <!-- Training view -->
-            <div id="Lection"    onclick="app.fontTest()" class="Training">
-                <img id="ImageMenu" src="res/menu.png" alt="Menu"/>
+            <div id="Lection" class="Training">  
+                <img id="ImageMenu" src="res/menu.png" alt="Menu" onclick="app.ButtonMenu_onClick()" />
                 Lection: <div id="LectionID"></div>
             </div>
 
@@ -180,7 +180,8 @@
                 <div id="editAnswer" class="edit">
                     <input type="text" id="editAnswerField">
                 </div>
-                <button id="ButtonFinish" onclick="editDialog.close()">Finish editing</button>
+                <button id="ButtonSave" onclick="editDialog.save()"><div id="SaveCaption">Save</div></button>
+		<button id="ButtonCancel" onclick="editDialog.close()"><div id="CancelCaption">Cancel</div></button>
             </div>
         </div>
     </body>

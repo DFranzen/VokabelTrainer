@@ -22,18 +22,13 @@
         "cordova-plugin-document-contract": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         },
-        "cordova-plugin-globalization": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
-        "cordova-plugin-splashscreen": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
-        "cordova-plugin-whitelist": {
-            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
-        },
         "cordova-plugin-file": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         }
     },
-    "dependent_plugins": {}
+    "dependent_plugins": {
+        "cordova-plugin-compat": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        }
+    }
 }
