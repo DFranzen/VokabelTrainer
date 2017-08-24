@@ -87,9 +87,9 @@ var listAPI = {
     revert: function (boxes) {
         'use strict';
         var i, j,
-            result = [[], [], [], [], []],
+            result = [[], [], [], [], [], []],
             word;
-        for (i = 0; i < 5; i += 1) {
+        for (i = 0; i <= 5; i += 1) {
             for (j = 0; j < boxes[i].length; j += 1) {
                 word = boxes[i][j];
                 result[i].push({word: word.translation, translation: word.word, file: word.file});
@@ -101,9 +101,9 @@ var listAPI = {
     reset: function (boxes) {
         'use strict';
         var i, j,
-            result = [[], [], [], [], []],
+            result = [[], [], [], [], [],[]],
             word;
-        for (i = 0; i < 5; i += 1) {
+        for (i = 0; i <= 5; i += 1) {
             for (j = 0; j < boxes[i].length; j += 1) {
                 word = boxes[i][j];
                 result[0].push(word);
@@ -190,7 +190,7 @@ var listAPI = {
      */
     parseFile: function (fileName, data) {
         'use strict';
-        var back = [ [], [], [], [], [] ],
+        var back = [ [], [], [], [], [], [] ],
             box = 0,
             i,
             lines = data.split("\n"),
@@ -203,15 +203,18 @@ var listAPI = {
 	
         for (i = 0; i < lines.length; i += 1) {
             if (lines[i].trim() === "-") {
-                box = (box >= 4)
-                    ? 4
+                box = (box >= 5)
+                    ? 5
                     : box + 1;
             } else {
                 newWord = listAPI.parseWord(lines[i],divider);
                 newWord.file = fileName;
-                if (newWord.word !== undefined) {
-                    back[box].push(newWord);
-                }
+		if (newWord.word === undefined) continue;
+		if (newWord.word === "") continue;
+		if (newWord.translation === undefined) continue;
+		if (newWord.translation === "") continue;
+		
+                back[box].push(newWord);
             }
         }
 	back["divider"] = divider;
@@ -409,6 +412,7 @@ var listAPI = {
 	    add_helper,
             used = Date.now();
 
+	// Check for re-add!
         for (i = 0; i < this.elements.length; i += 1) {
             if (this.elements[i].value === uri) {
                 added = this.elements[i].added;
@@ -547,13 +551,13 @@ var listAPI = {
     showProgress: function (boxes, iconNode, percentNode) {
         'use strict';
         iconNode.innerHTML = "";
-        var color = ["#e0a8a8", "#e0c4a8", "#e0dfa8", "#cde0a8", "#b7e0a8"],
+        var color = ["#e0a8a8", "#e0c4a8", "#e0dfa8", "#cde0a8", "#b7e0a8", "#b7e0a8"],
             div,
             i,
             progress = 0,
             total = 0;
 
-        for (i = 0; i < 5; i += 1) {
+        for (i = 0; i <= 5; i += 1) {
             div = document.createElement("div");
             div.className = "listStatusLayer";
             div.style.backgroundColor = color[i];
@@ -561,7 +565,7 @@ var listAPI = {
 
             iconNode.appendChild(div);
 
-            progress += boxes[i].length * i * 25;
+            progress += boxes[i].length * Math.min(i,4) * 25;
             total += boxes[i].length;
         }
 
@@ -578,7 +582,36 @@ var listAPI = {
     },
     showCount: function (boxes, node) {
         'use strict';
-        node.innerHTML = boxes[0].length + boxes[1].length + boxes[2].length + boxes[3].length + boxes[4].length;
+	var i,c = 0;
+	for (i = 0; i < boxes.length; i++) {
+	    c += boxes[i].length;
+	}
+        node.innerHTML = c;
+    },
+    showList: function (boxes, node) {
+	'use strict';
+	var i,j,count=0,
+	    tr,tdw,tdt,
+	    bgClass;
+	node.innerHTML = "";
+	for (i = 0; i < boxes.length; i++) {
+	    for (j = 0; j < boxes[i].length; j++) {
+		tr = document.createElement("tr");
+		tdw = document.createElement("td");
+		tdw.innerHTML = boxes[i][j].word;
+		tdt = document.createElement("td");
+		tdt.innerHTML = boxes[i][j].translation;
+		tdw.classList.add("tdRightBorder");
+		tdt.classList.add("tdLeftBorder");
+		bgClass = ((count % 2) === 0) ? "trEven" : "trOdd";
+		tr.classList.add(bgClass);
+		tr.appendChild(tdw);
+		tr.appendChild(tdt);
+		node.appendChild(tr);
+		count++;
+	    }
+	}
+	    
     },
     clickHandler: function (id) {
         'use strict';
@@ -607,6 +640,9 @@ dialog = {
         'use strict';
         document.getElementById("InfoChooser").onclick = function () {
             dialog.showTab("InfoContent", "InfoChooser");
+        };
+        document.getElementById("ListChooser").onclick = function () {
+            dialog.showTab("ListContent", "ListChooser");
         };
         document.getElementById("OptionChooser").onclick = function () {
             dialog.showTab("OptionContent", "OptionChooser");
@@ -681,6 +717,10 @@ dialog = {
         listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
             listAPI.showCount(boxes, document.getElementById("dialogCount"));
         });
+	
+	listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
+	    listAPI.showList(boxes, document.getElementById("dialogListDiv"));
+	});
 
         document.getElementById("dialogBack").onclick = dialog.hide;
         document.getElementById("dialogVeil").onclick = dialog.hide;
@@ -689,40 +729,20 @@ dialog = {
         };
 
         document.getElementById("dialogRemove").onclick = function () {
-            var confText,
-                response;
-            confText = "Do you really want to remove the file " + listAPI.elements[id].caption + " from the list of word-files?\nThe file itself and the progress will remain on the storage and can be re-added later.";
-            response = window.confirm(confText);
-
-            if (response) {
-                dialog.hide();
-                listAPI.remove(id);
-            }
+            dialog.hide();
+            listAPI.remove(id);
         };
         document.getElementById("dialogRevert").onclick = function () {
-            var confText,
-                response;
-
-            confText = "Do you really want to swap all words with their translation in the file " + listAPI.elements[id].caption + "?";
-            response = window.conirm(confText);
-            if (response) {
-                listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
-                    listAPI.writeParsed(listAPI.elements[id].value, listAPI.revert(boxes));
-                    app.updatePreview(id, listAPI.elements[id].selected);
-                });
-            }
+            listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
+                listAPI.writeParsed(listAPI.elements[id].value, listAPI.revert(boxes));
+                app.updatePreview(id, listAPI.elements[id].selected);
+            });
         };
         document.getElementById("dialogReset").onclick = function () {
-            var confText,
-                response;
-            confText = "Do you really want to reset the progress in the file " + listAPI.elements[id].caption + " to 0% ?";
-            response = window.confirm(confText);
-            if (response) {
-                listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
-                    listAPI.writeParsed(listAPI.elements[id].value, listAPI.reset(boxes));
-                    listAPI.show();
-                });
-            }
+            listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
+                listAPI.writeParsed(listAPI.elements[id].value, listAPI.reset(boxes));
+                listAPI.show();
+            });
         };
 
         divs = document.getElementsByClassName("Details");

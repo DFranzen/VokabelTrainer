@@ -96,12 +96,6 @@
         preventDrag        : false
       },
 
-      isTouch = 'ontouchstart' in win,
-
-      startEvent = isTouch ? 'touchstart' : 'mousedown',
-      moveEvent = isTouch ? 'touchmove' : 'mousemove',
-      endEvent = isTouch ? 'touchend' : 'mouseup',
-
       keycodes = {
         37: "left",
         38: "up",
@@ -226,13 +220,14 @@
      * @returns {Object}
      */
     function getCoords(event) {
-      // touch move and touch end have different touch data
+	// touch move and touch end have different touch data
+	window.evExample = event;
       var touches = event.touches,
           data = touches && touches.length ? touches : event.changedTouches;
 
       return {
-        x: isTouch ? data[0].pageX : event.pageX,
-        y: isTouch ? data[0].pageY : event.pageY
+          x: event.type.includes("touch") ? data[0].pageX : event.pageX,
+          y: event.type.includes("touch") ? data[0].pageY : event.pageY
       };
     }
 
@@ -283,7 +278,7 @@
       if ($) {
         $(container).on(event, callback);
       } else {
-        container.addEventListener(event, callback, false);
+          container.addEventListener(event, callback, {passive: false});
       }
     }
 
@@ -358,7 +353,8 @@
 
       _observe: function() {
 
-        addEventListener(this.container, startEvent, this._onStart);
+          addEventListener(this.container, "mousedown", this._onStart);
+	  addEventListener(this.container, "touchstart", this._onStart);
         this.container.onselectstart = falseFn;
         this.container.ondragstart = falseFn;
 
@@ -379,8 +375,10 @@
           event.stopPropagation();
         }
 
-        addEventListener(doc.body, moveEvent, this._onMove);
-        addEventListener(doc.body, endEvent, this._onEnd);
+          addEventListener(doc.body, "mousemove", this._onMove);
+	  addEventListener(doc.body, "touchmove", this._onMove);
+          addEventListener(doc.body, "mouseup", this._onEnd);
+	  addEventListener(doc.body, "touchend", this._onEnd);
 
         this.startCoords = getCoords(event);
 
@@ -430,8 +428,10 @@
 
         this.settings.onDragEnd.call( this, this.container, this.activeElement, this.page, event );
 
-        removeEventListener(doc.body, moveEvent, this._onMove);
-        removeEventListener(doc.body, endEvent, this._onEnd);
+          removeEventListener(doc.body, "mousemove", this._onMove);
+	  removeEventListener(doc.body, "touchmove", this._onMove);
+          removeEventListener(doc.body, "mouseup", this._onEnd);
+	  removeEventListener(doc.body, "touchend", this._onEnd);
 
       },
 
@@ -815,9 +815,12 @@
 
         var container = this.container;
 
-        removeEventListener(container, startEvent);
-        removeEventListener(container, moveEvent);
-        removeEventListener(container, endEvent);
+          removeEventListener(container, "mousedown");
+	  removeEventListener(container, "touchstart");
+          removeEventListener(container, "mousemove");
+	  removeEventListener(container, "touchmove");
+          removeEventListener(container, "mouseup");
+	  removeEventListener(container, "touchend");
         removeEventListener(doc.body, "keydown", this._onKeydown);
         removeEventListener(win, "resize", this._sizePages);
 

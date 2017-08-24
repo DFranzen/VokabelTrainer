@@ -28,7 +28,7 @@
     </head>
 
     <body id="body">
-        <div class="app" id="app">
+      <div class="app" id="app">
             <!-- Training view -->
             <div id="Lection" class="Training">  
                 <img id="ImageMenu" src="res/menu.png" alt="Menu" onclick="app.ButtonMenu_onClick()" />
@@ -74,6 +74,15 @@
                 </div>
             </div>
 
+	    <div id="UndoDiv" data-anim="base" onclick="app.triggerUndo()">
+	      <div id="UndoBackground">
+		<img id="UndoIcon" src="res/undo.png" alt="undo" />
+	      </div>
+	      <div id="UndoAnimDiv" data-anim="base">
+		<div id="UndoCircleL" data-anim="base"></div>
+		<div id="UndoCircleR" data-anim="base"></div>
+	      </div>
+	    </div>
             <button id="ButtonCorrect" class="Training" onclick="app.ButtonCorrect_onClick()">
                 <div id="ContainerCorrect" class="centerContainer">
                     <img id="ImageCorrect" class="centerElement" src="res/tick.png" alt="Correct"/>
@@ -85,7 +94,7 @@
                 </div>
             </button>
 
-
+	    
             <!-- Main menu -->
             <div id="MenuHeader" onclick="app.loadTest()" class="Menu"><div id="MenuCaption">Choose your Files</div></div>
             <div id="menuBackground" class="Menu">
@@ -137,10 +146,11 @@
                 <div id="dialog" class="Details">
                     <div id="dialogHeader"></div>
                     <div id="dialogBackground"></div>
-                    <div id="ChooserPannel"></div>
-                    <div id="InfoChooser" class="DialogChooser">Information</div>
-                    <div id="OptionChooser" class="DialogChooser">Options</div>
-
+                    <div id="ChooserPannel">
+                      <div id="InfoChooser" class="DialogChooser">Information</div>
+		      <div id="ListChooser" class="DialogChooser">List</div>
+                      <div id="OptionChooser" class="DialogChooser">Options</div>
+		    </div>
                     <div>
                     </div>
 
@@ -152,16 +162,39 @@
                         <b>Progress: </b><span id="dialogProgressPercent"> </span> learned <p id="dialogProgress"></p><br>
                     </div>
                     <div id="OptionContent" class="Details DialogTab">
+		      <div>
                         <div id="dialogRemove" class="DialogButton">
                             Remove file from list
                         </div>
+			<div id="dialogRemoveExplain" class="DialogExplain">
+			  Removes the file from the list of vocabulary files.
+			  The file itself and the progress will remain where it is stored and can be re-added later
+			</div>
+		      </div>
+		      <div>
                         <div id="dialogRevert" class="DialogButton">
                             Swap languages
                         </div>
+			<div id="dialogRevertExplain" class="DialogExplain">
+			  Swapps all words with its translation and writes the words in swapped order back into the vocabulary file.
+			  Use this if you want to match the learning direction of this file with another file.
+			</div>
+		      </div>
+		      <div>
                         <div id="dialogReset" class="DialogButton">
                             Reset Progress
                         </div>
+			<div id="dialogResetExplain" class="DialogExplain">
+			  Resets the learning progress of this vocabulary file to 0%.
+			  Use this if you want to start over learning this file.
+			</div>
+		      </div>
                     </div>
+		    <div id="ListContent" class="Details DialogTab">
+		      <table id="dialogListDiv">
+			
+		      </table>
+		    </div>
                     <div id="dialogBack" class="DialogButton">
                         Back
                     </div>
@@ -183,7 +216,18 @@
                 <button id="ButtonSave" onclick="editDialog.save()"><div id="SaveCaption">Save</div></button>
 		<button id="ButtonCancel" onclick="editDialog.close()"><div id="CancelCaption">Cancel</div></button>
             </div>
-        </div>
+      </div>
+      <!-- MessageBox -->
+      <div id="MessageBox">
+	<div id="Message">
+	  <div id="MessageCaption">
+	    Hallo Welt!
+	  </div><br>
+	  <div id="MessageBody">
+	    Das ist ein Test
+	  </div>
+	</div>
+      </div>
     </body>
 
 </html>

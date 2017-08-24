@@ -35,7 +35,7 @@
     <platform name="android">
         <allow-intent href="market:*" />
     </platform>
-    <engine name="browser" spec="~4.1.0" />
+    <engine name="browser" spec="^4.1.0" />
     <plugin name="com.dfranzen.cordova.FileStorage" spec="https://github.com/DFranzen/cordova-FileStorage.git" />
     <plugin name="cordova-plugin-compat" spec="~1.1.0" />
     <plugin name="cordova-plugin-console" spec="~1.0.7" />
