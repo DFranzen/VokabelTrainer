@@ -38,10 +38,16 @@ body {
     --color-selected-bright:   #0043af;
 }
 
+button {
+    font-size: 100%;
+    outline-style: none;
+}
+
 /* Portrait layout (default) */
 .app {
-    height:100%;                   /* text area height */
-    width:100%;                   /* text area width */
+    height:auto;
+    bottom: 0em;
+    width:100%; 
     text-align:center;
 }
 
@@ -296,7 +302,7 @@ body {
     border-top-left-radius: 5pt;
     top: 3em;
     height: 2em;
-    width: 8%;
+    width: 14%;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -315,45 +321,100 @@ body {
     left:0%;
     width: 100%;
     height: 6em;
+    z-index: 110;
 }
 
 #MenuCaption
 {
-    position: absolute:
+    position: absolute;
     top: 0%;
     left:0%;
     width:60%;
     padding: 1em;
     font-size:200%;
 }
+
+#BottomBar {
+    padding-left: 2em;
+    position: absolute;
+    right: 2em;
+    left: 2em;
+    box-sizing: border-box;
+    height: 6em;
+    bottom: 2em;
+}
+
+#Toolkit
+{
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0em 3em;    
+    height: 4em;
+    box-sizing: border-box;
+
+    display: flex;
+    
+    background: gray;
+    opacity: 0.86;
+
+}
+
+#InputSearch {
+    visibility: hidden;
+    height: 1.5em;
+    width:100%;
+    margin-top: -2em;
+    font-size: 200%;
+}
+
+#ContainerInputSearch {
+    position: absolute;
+    left: 8em;
+    right: 8em;
+}
+
+.ToolButton
+{
+    height: 100%;
+    width: 4em;
+    padding: 5px;
+    
+    box-sizing: border-box;
+    border: 2px solid black;
+    border-radius: 10px;
+
+    margin: 0 0.15em;
+}
 		
 #Box0Div
 {
-    left: 22%;
+    left: 11%;
     background-color: #e0a8a8;
 }
 #Box1Div
 {
-    left: 34%;
+    left: 27%;
     background-color: #e0c4a8;
 }
 #Box2Div
 {
-    left: 46%;
+    left: 43%;
     background-color: #e0dfa8;
 }
 #Box3Div
 {
-    left: 58%;
+    left: 59%;
     background-color: #cde0a8;
 }
 #Box4Div
 {
-    left: 70%;
+    left: 75%;
     background-color: #b7e0a8;
 }
 
-#menuBackground
+#FileList
 {
     position: absolute;
     background-color:  #E4E4E4;
@@ -361,26 +422,28 @@ body {
     left:0%;
     width:100%;
     bottom:0em;
+    height: auto;
+    overflow: hidden;
+}
+
+.CircularButton {
+    width: 6em;
+    height: 6em;
+    border-radius: 50%;
 }
 
 #ButtonStart {
     position: absolute;
-    bottom: 5%;
-    right: 5%;
-    width: 6em;
-    height: 6em;
+    bottom: 0;
+    right: 0;
     background-color: #03e000;
-    border-radius:50%;
 }
 
 #ButtonLoad {
     position: absolute;
-    bottom: 5%;
-    left: 5%;
-    width: 6em;
-    height: 6em;
+    bottom: 0;
+    left: 0;
     background-color: #1c23ea;
-    border-radius:50%
 }
 
 #ImageLoad
@@ -395,23 +458,16 @@ body {
     height:100%;
 }
 
-#listArea
-{
-    position:absolute;
-    top:0%;
-    left:0%;
-    width: 100%;
-    bottom: 0em;
-    overflow: scroll;
-}
-
 #listRecent
 {
     position:absolute;
     top:0%;
     left:0%;
     width: 100%;
-    height: 100%;
+    bottom: 0em;
+    height: auto;
+    overflow: scroll;
+    padding-bottom: 10em;
 }
 
 .listElement
@@ -422,22 +478,28 @@ body {
     padding: 1em;
     box-sizing: border-box;
     position:relative;
+    background: #E4E4E4;
 }
 
 .listElementEven
 {
     background-color: #bcbcbc;
 }
+
 .listElementSelected
 {
     background-color: #0043af;
     color:white;
 }
 
-.listElementEvenSelected
+.listElementSelected.listElementEven
 {
     background-color: #002d77;
-    color : white;
+}
+
+.listElementDisabled
+{
+    color: grey;
 }
 
 .List
@@ -521,10 +583,19 @@ body {
 {
     opacity: 0.8;
     position:absolute;
-    top: 0%;
+    top: 2em;
     left: 60%;
     width: 40%;
     height: 40%;
+    z-index: 100;
+}
+
+#preview #answerContainer {
+    text-align: center;
+}
+
+#preview #questionContainer {
+    text-align: center;
 }
 
 #ImageSwitch
@@ -635,6 +706,7 @@ body {
     height:100%;
     background-color: rgba(84,84,84,0.8);
     visibility: hidden;
+    z-index: 120;
 }
 
 #dialog
@@ -697,6 +769,10 @@ body {
 
 .trEven {
     background-color: #EFEF20;
+}
+
+.trFound {
+    background-color: #FF6730;
 }
 
 .tdLeftBorder {
@@ -836,7 +912,7 @@ div#Message {
 #UndoBackground {
   width: 100%;
   height: 100%;
-  border: 10px solid rgba(68,68,68,0);
+  border: 4px solid rgba(68,68,68,0);
   box-sizing:border-box;
   position: absolute;
 }
@@ -860,7 +936,7 @@ div#Message {
 #UndoCircleL {
     width: 100%;
     height: 100%;
-    border: 10px solid rgba(68,68,68,1);
+    border: 4px solid rgba(68,68,68,1);
     border-radius: 50%;
     position: absolute;
     box-sizing:border-box;
@@ -873,7 +949,7 @@ div#Message {
 #UndoCircleR {
     width: 100%;
     height: 100%;
-    border: 10px solid rgba(68,68,68,1);
+    border: 4px solid rgba(68,68,68,1);
     border-radius: 50%;
     position: absolute;
     box-sizing:border-box;

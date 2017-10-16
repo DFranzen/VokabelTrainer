@@ -1,7 +1,27 @@
+
 /* Todo-list
+ * *** Features
+ *  - Demo Workthrough / Hilfe
+ *  - Lektionen umbennen / duplizieren / erstellen
+ *  - Wörter hinzufügen
+ *  - Wörter editieren in List view
+ *  - Blättern zum nächsten File in List view
+ *  - mark / unmark alle files im file view
+ *  - #(words) auf der Vorschau
+ *  - Optionales Zeitlimit im Wiederholungsmodus
+ * *** Bugs
+ *  - Message Dialog does not close on back
+ *  - Message Dialog shows during startup
+ *  - Message Dialog says continue if #(6) = all
+ *  - Double click fires sometimes with multiple clicks or swipes
+ *  - Font-size after edit
+ *  - Check file availability after wake
+ *  - Delete leftovers of deleted files to enable readd of broken files
+ *  - 
  * *** Ideas
  *  - picture vokabelListen
  *  - localise
+ *  - change font-size in file view with volumne rocker
  */
 
 var Dragend = window.Dragend;
@@ -38,6 +58,7 @@ var app = {
     divider: ";",
 
     reverse: false,
+    vowels: true,
     preview: {},
 
     fonts: [
@@ -170,12 +191,14 @@ var app = {
         question = (app.reverse)
             ? app.preview.translation
             : app.preview.word;
+	if (!app.vowels) question = app.removeVowels(question);
         document.getElementById("prev_question").innerHTML = question;
         app.matchFont("prev_question");
 
         answer = (app.reverse)
             ? app.preview.word
             : app.preview.translation;
+	if (!app.vowels) answer = app.removeVowels(answer);
         document.getElementById("prev_answer").innerHTML = answer;
         app.matchFont("prev_answer");
     },
@@ -336,6 +359,7 @@ var app = {
         answer = (app.reverse)
             ? app.currentWord.word
             : app.currentWord.translation;
+	if (!app.vowels) answer = app.removeVowels(answer);
         document.getElementById("coverDiv").style.visibility = "hidden";
         document.getElementById("answer").innerHTML = answer.replace(",", "<br>");
         document.getElementById("answer").style.color = "#000000";
@@ -370,9 +394,24 @@ var app = {
         var question = (!app.reverse)
             ? app.currentWord.word
             : app.currentWord.translation;
+	if (!app.vowels) question = app.removeVowels(question);
         document.getElementById("question").innerHTML = question;
         app.matchFont("question");
             
+    },
+    removeVowels: function(word) {
+	'use strict';
+	var i,
+	    back = '';
+	for ( i = 0; i < word.length; i++) {
+	    if (word.charCodeAt(i) === 1614) continue; //fatha
+	    if (word.charCodeAt(i) === 1615) continue; //damma
+	    if (word.charCodeAt(i) === 1616) continue; //kasra
+
+	    back += word[i];
+	}
+
+	return back;
     },
     activateButtonCorrect: function () {
         'use strict';

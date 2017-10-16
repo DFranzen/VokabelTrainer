@@ -96,50 +96,65 @@
 
 	    
             <!-- Main menu -->
-            <div id="MenuHeader" onclick="app.loadTest()" class="Menu"><div id="MenuCaption">Choose your Files</div></div>
-            <div id="menuBackground" class="Menu">
-
-                <div id="listArea" class="Menu">
-                    <div id="listRecent" class="List Menu">
-                    </div>
-                </div>
-            </div>
-
-            <button id="ButtonLoad"  class="Menu" onclick="app.ButtonLoad_onClick()" >
-                <div id="ContainerLoad" class="centerContainer">
-                    <img id="ImageLoad" class="centerElement" src="res/plus.png" alt="Add File"/>
-                </div>
-            </button>
-            <button id="ButtonStart" class="Menu" onclick="app.ButtonStart_onClick()" >
-                <div id="ContainerStart" class="centerContainer">
-                    <img id="ImageStart" class="centerElement" src="res/arrow.png" alt="Start"/>
-                </div>
-            </button>
-
+            <div id="MenuHeader" onclick="app.loadTest()" class="Menu"><div id="MenuCaption">Choose your Files</div>
+	    </div>
+            <div id="FileList" class="Menu">
+	      
+              <div id="listRecent" class="List Menu">
+              </div>
+	    </div>
+	      
+	    
             <div id="preview" class="Menu" onclick="app.preview_onClick()">
-                <div id="questionDiv">
-                    <div id="questionContainer">
-                        <div id="prev_question">
-                        </div>
+	      <div id="questionDiv">
+                <div id="questionContainer">
+                  <div id="prev_question">
+                  </div>
+                </div>
+                <div id="questionLine"> </div>
+              </div>
+              <div id="question_border">
+                  <div class="questionLineSmall" style="top:20%"> </div>
+                  <div class="questionLineSmall" style="top:40%"> </div>
+                  <div class="questionLineSmall" style="top:60%"> </div>
+                  <div class="questionLineSmall" style="top:80%"> </div>
+              </div>
+              <div id="answerArea">
+                <div id="answerDiv">
+                  <div id="answerContainer">
+                    <div id="prev_answer">
                     </div>
-                    <div id="questionLine"> </div>
+                  </div>
                 </div>
-                <div id="question_border">
-                    <div class="questionLineSmall" style="top:20%"> </div>
-                    <div class="questionLineSmall" style="top:40%"> </div>
-                    <div class="questionLineSmall" style="top:60%"> </div>
-                    <div class="questionLineSmall" style="top:80%"> </div>
-                </div>
-                <div id="answerArea">
-                    <div id="answerDiv">
-                        <div id="answerContainer">
-                            <div id="prev_answer">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <img id="ImageSwitch" src="res/switch.png"/>
+              </div>
+              <img id="ImageSwitch" src="res/switch.png"/>
             </div>
+
+	    <div id="BottomBar" class="Menu">
+	      <div id="ContainerInputSearch" class="Menu">
+		<input type="text" id="InputSearch" onkeyup="listAPI.InputSearch_onKeyUp()"/>
+	      </div>
+	      
+	      <div id="Toolkit">
+		<div style="flex-grow: 1;"></div>
+		<img src="res/a2z.png" id="ButtonSort" class="ToolButton" onclick="listAPI.ButtonSort_onClick()" />
+		<img src="res/vowels.png" id="ButtonVowel" class="ToolButton" onclick="listAPI.ButtonVowel_onClick()" />
+		<img src="res/search.png" id="ButtonSearch" class="ToolButton" onclick="listAPI.ButtonSearch_onClick()" />
+		<div style="flex-grow: 1;""></div>
+	      </div>
+	      
+              <button id="ButtonLoad"  class="Menu CircularButton" onclick="app.ButtonLoad_onClick()" >
+                <div id="ContainerLoad" class="centerContainer">
+                  <img id="ImageLoad" class="centerElement" src="res/plus.png" alt="Add File"/>
+                </div>
+              </button>
+              <button id="ButtonStart" class="Menu CircularButton" onclick="app.ButtonStart_onClick()" >
+                <div id="ContainerStart" class="centerContainer">
+                  <img id="ImageStart" class="centerElement" src="res/arrow.png" alt="Start"/>
+                </div>
+              </button>
+	    </div>
+
             
             <!-- Details View -->
             <div id="dialogVeil" class="Details">

@@ -10,13 +10,16 @@ var listAPI = {
     divider: {},
     notAvail: {},
     lastClicked: "",
+    
     /* Initialises the API */
     init: function (elements) {
         'use strict';
 	if (elements === null) elements = [];
 	listAPI.elements = elements;
         listAPI.untoggleAll();
+	document.getElementById("InputSearch").addEventListener("keyup",listAPI.InputSearch_onKeyUp);
         listAPI.show();
+
     },
     /* Returns array of all Selected URIs */
     getSelected: function () {
@@ -414,7 +417,8 @@ var listAPI = {
 
 	// Check for re-add!
         for (i = 0; i < this.elements.length; i += 1) {
-            if (this.elements[i].value === uri) {
+            if ( (uri !== "test") &&
+		 (this.elements[i].value === uri) ) {
                 added = this.elements[i].added;
                 used = this.elements[i].used;
                 this.remove(i);
@@ -425,12 +429,12 @@ var listAPI = {
 	    listAPI.elements.unshift({caption: name, value: uri, selected: selected, added: added, used: used});
 	    localStorage.setItem("recentFiles", JSON.stringify(listAPI.elements));
             listAPI.show();
-	    //app.updatePreview(0,false);
+	    app.updatePreview(0,false);
 	}
 
 	
 	if (uri === "test") {
-	    add_helper("test 123456789");
+	    add_helper("test" + listAPI.elements.length);
 	} else {
 	    window.fileStorage.getNameFromUri(
 		add_helper,
@@ -494,7 +498,57 @@ var listAPI = {
     show: function () {
         'use strict';
         document.getElementById("listRecent").innerHTML = "";
+	this.showSortButton();
         this.elements.forEach(this.htmlAdd);
+	this.htmlBGColor();
+    },
+    showSortButton: function() {
+	if (listAPI.sort === "alphanum") {
+	    document.getElementById("ButtonSort").src="res/a2z.png";
+	} else if (listAPI.sort === "munahpla") {
+	    document.getElementById("ButtonSort").src="res/z2a.png";
+	} else {
+	    document.getElementById("ButtonSort").src="res/recent.png";
+	}
+    },
+    toggleSort: function() {
+	if (listAPI.sort === "alphanum") {
+	    listAPI.sort = "munahpla";
+	} else if (listAPI.sort === "munahpla") {
+	    listAPI.sort = "recent";
+	} else {
+	    listAPI.sort = "alphanum";
+	}
+	listAPI.show();
+    },
+    toggleVowel: function() {
+	'use strict';
+	var src;
+	
+	app.vowels = !app.vowels;
+	src = (app.vowels) ? "res/vowels.png" : "res/novowels.png";
+	document.getElementById("ButtonVowel").src = src;
+	app.showPreview();
+    },
+    toggleSearch: function() {
+	var inputSearch = document.getElementById("InputSearch");
+	if (inputSearch.style.visibility === "inherit") {
+	    inputSearch.style.visibility = "hidden";
+	    listAPI.show();
+	} else {
+	    inputSearch.style.visibility = "inherit";
+	    inputSearch.select();
+	}
+    },
+    htmlBGColor: function() {
+	var list = document.getElementById("listRecent").children,
+	    i;
+
+	for (i = 0; i < list.length; i++) {
+	    if ((i % 2) === 1) {
+		list[i].classList.add("listElementEven");
+	    }
+	}
     },
     htmlAdd: function (element, id) {
         'use strict';
@@ -503,7 +557,10 @@ var listAPI = {
             listElement = document.createElement("div"),
             status  = document.createElement("div"),
             statusPercent = document.createElement("div"),
-	    fileName;
+	    fileName,
+	    list,
+	    childid,
+	    childbefore;
 
 
 	fileName = element.value;
@@ -522,16 +579,18 @@ var listAPI = {
         listElement.appendChild(caption);
 
         classname = "listElement";
-        if ((id % 2) === 1) {
+        /*if ((id % 2) === 1) {
             classname += " listElementEven";
         }
         if (element.selected) {
-            if (id % 2 === 1) {
-                classname += " listElementSelected";
-            } else {
+        if (id % 2 === 1) {*/
+	if (element.selected) {
+            classname += " listElementSelected";
+	}
+	/*} else {
                 classname += " listElementEvenSelected";
             }
-        }
+        }*/
         listElement.className = classname;
         listElement.onclick = function () {
             listAPI.clickHandler(id);
@@ -542,11 +601,61 @@ var listAPI = {
             listAPI.onlongclick(id);
         });
 
-        document.getElementById("listRecent").appendChild(listElement);
+	list = document.getElementById("listRecent");
+
+	childid = list.children.length; // default is to insert at the end
+
+	if (listAPI.sort === "alphanum") {
+	    childid = 0;
+	    while ( (childid < list.children.length) &&
+		    (list.children[childid].children[2].innerHTML.toLowerCase() < element.caption.toLowerCase()) ) {
+		childid ++
+	    }
+	} else if (listAPI.sort ==="munahpla") {
+	    childid = 0;
+	    while ( (childid < list.children.length) &&
+		    (list.children[childid].children[2].innerHTML >= element.caption) ) {
+		childid ++
+	    }
+	}
+	
+	if ( childid < list.children.length ) {
+	    list.insertBefore(listElement,list.children[childid]);
+	} else {
+	    list.appendChild(listElement);
+	}
 
         listAPI.withParsed(element.value, function (boxes) {
             listAPI.showProgress(boxes, status, statusPercent);
         });
+
+	
+	listAPI.withParsed(element.value, function(boxes) {
+	    var inputSearch = document.getElementById("InputSearch");
+	    var searchTerm = inputSearch.value;
+	    if (inputSearch.value !== "") {
+		if (!listAPI.findInOne(boxes,searchTerm)) {
+		    listElement.classList.add("listElementDisabled");
+		}
+	    }
+	});
+    },
+    findInOne: function(boxes,searchTerm) {
+	var i,j, word, tans;
+	searchTerm = app.removeVowels(searchTerm.toLowerCase());
+	for (i=0;i<boxes.length;i++) {
+	    for (j=0;j<boxes[i].length;j++) {
+		word = app.removeVowels(boxes[i][j].word.toLowerCase());
+		trans = app.removeVowels(boxes[i][j].translation.toLowerCase());
+		if (word.indexOf(searchTerm) != -1) {
+		    return true;
+		}
+		if (trans.indexOf(searchTerm) != -1) {
+		    return true;
+		}
+	    }
+	}
+	return false;
     },
     showProgress: function (boxes, iconNode, percentNode) {
         'use strict';
@@ -592,7 +701,8 @@ var listAPI = {
 	'use strict';
 	var i,j,count=0,
 	    tr,tdw,tdt,
-	    bgClass;
+	    bgClass,
+	    searchTerm;
 	node.innerHTML = "";
 	for (i = 0; i < boxes.length; i++) {
 	    for (j = 0; j < boxes[i].length; j++) {
@@ -605,6 +715,14 @@ var listAPI = {
 		tdt.classList.add("tdLeftBorder");
 		bgClass = ((count % 2) === 0) ? "trEven" : "trOdd";
 		tr.classList.add(bgClass);
+		searchTerm = document.getElementById("InputSearch").value.toLowerCase();
+		if ( (searchTerm !== "") &&
+		     ( (boxes[i][j].word.toLowerCase().indexOf(searchTerm) !== -1) ||
+		       (boxes[i][j].translation.toLowerCase().indexOf(searchTerm) !== -1)
+		     )
+		   ) {
+		    tr.classList.add("trFound");
+		}
 		tr.appendChild(tdw);
 		tr.appendChild(tdt);
 		node.appendChild(tr);
@@ -631,6 +749,22 @@ var listAPI = {
     onlongclick: function (id) {
         'use strict';
         dialog.show(id);
+    },
+    ButtonSort_onClick: function() {
+	listAPI.toggleSort();
+	event.stopPropagation();
+    },
+    ButtonVowel_onClick: function() {
+	listAPI.toggleVowel();
+	event.stopPropagation();
+    },
+    ButtonSearch_onClick: function() {
+	listAPI.toggleSearch();
+	//document.getElementById("InputSearch").style.visibility = "visible";
+    },
+    InputSearch_onKeyUp: function() {
+	window.console.log("Keyup on searchbar");
+	listAPI.show();
     }
 };
 	

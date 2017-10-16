@@ -38,6 +38,7 @@ var app = {
     divider: ";",
 
     reverse: false,
+    vowels: true,
     preview: {},
 
     fonts: [
@@ -170,12 +171,14 @@ var app = {
         question = (app.reverse)
             ? app.preview.translation
             : app.preview.word;
+	if (!app.vowels) question = app.removeVowels(question);
         document.getElementById("prev_question").innerHTML = question;
         app.matchFont("prev_question");
 
         answer = (app.reverse)
             ? app.preview.word
             : app.preview.translation;
+	if (!app.vowels) answer = app.removeVowels(answer);
         document.getElementById("prev_answer").innerHTML = answer;
         app.matchFont("prev_answer");
     },
@@ -336,6 +339,7 @@ var app = {
         answer = (app.reverse)
             ? app.currentWord.word
             : app.currentWord.translation;
+	if (!app.vowels) answer = app.removeVowels(answer);
         document.getElementById("coverDiv").style.visibility = "hidden";
         document.getElementById("answer").innerHTML = answer.replace(",", "<br>");
         document.getElementById("answer").style.color = "#000000";
@@ -370,9 +374,24 @@ var app = {
         var question = (!app.reverse)
             ? app.currentWord.word
             : app.currentWord.translation;
+	if (!app.vowels) question = app.removeVowels(question);
         document.getElementById("question").innerHTML = question;
         app.matchFont("question");
             
+    },
+    removeVowels: function(word) {
+	'use strict';
+	var i,
+	    back = '';
+	for ( i = 0; i < word.length; i++) {
+	    if (word.charCodeAt(i) === 1614) continue; //fatha
+	    if (word.charCodeAt(i) === 1615) continue; //damma
+	    if (word.charCodeAt(i) === 1616) continue; //kasra
+
+	    back += word[i];
+	}
+
+	return back;
     },
     activateButtonCorrect: function () {
         'use strict';
