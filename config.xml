@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="dfranzen.vokabeltrainer" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+<widget id="dfranzen.vokabeltrainer" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:gap="http://phonegap.com/ns/1.0">
     <name>VokabelTrainer</name>
     <description>
       Vokabel Trainer inspired by index cards
@@ -24,6 +24,14 @@
         <splash density="port-xhdpi" src="www/res/screen/android/drawable-port-xhdpi-screen.png" />
         <splash density="port-xxhdpi" src="www/res/screen/android/drawable-port-xxhdpi-screen.png" />
         <splash density="port-xxxhdpi" src="www/res/screen/android/drawable-port-xxxhdpi-screen.png" />
+        <config-file parent="./application/activity/intent-filter" target="AndroidManifest.xml">
+            <category android:name="android.intent.category.MULTIWINDOW_LAUNCHER" />
+        </config-file>
+        <config-file parent="./application" target="AndroidManifest.xml">
+            <uses-library android:name="com.sec.android.app.multiwindow" android:required="false" />
+            <meta-data android:name="com.samsung.android.sdk.multiwindow.penwindow.enable" android:value="true" />
+            <meta-data android:name="com.sec.android.support.multiwindow" android:value="true" />
+        </config-file>
     </platform>
     <access origin="*" />
     <allow-intent href="http://*/*" />
@@ -37,6 +45,8 @@
     </platform>
     <engine name="browser" spec="^4.1.0" />
     <plugin name="com.dfranzen.cordova.FileStorage" spec="https://github.com/DFranzen/cordova-FileStorage.git" />
+    <plugin name="com.manueldeveloper.volume-buttons" spec="https://github.com/manueldeveloper/cordova-plugin-volume-buttons.git" />
+    <plugin name="cordova-custom-config" spec="^4.0.2" />
     <plugin name="cordova-plugin-compat" spec="~1.1.0" />
     <plugin name="cordova-plugin-console" spec="~1.0.7" />
     <plugin name="cordova-plugin-device" spec="~1.1.6" />

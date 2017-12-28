@@ -212,6 +212,14 @@ module.exports = [
             "cordova"
         ],
         "runs": true
+    },
+    {
+        "id": "com.manueldeveloper.volume-buttons.volumebuttons",
+        "file": "plugins/com.manueldeveloper.volume-buttons/www/volumebuttons.js",
+        "pluginId": "com.manueldeveloper.volume-buttons",
+        "clobbers": [
+            "navigator.volumebuttons"
+        ]
     }
 ];
 module.exports.metadata = 
@@ -223,7 +231,9 @@ module.exports.metadata =
     "cordova-plugin-device": "1.1.3",
     "cordova-plugin-dialogs": "1.2.1",
     "cordova-plugin-document-contract": "0.4.1",
-    "cordova-plugin-file": "4.3.3"
+    "cordova-plugin-file": "4.3.3",
+    "cordova-custom-config": "4.0.2",
+    "com.manueldeveloper.volume-buttons": "0.0.3"
 };
 // BOTTOM OF METADATA
 });

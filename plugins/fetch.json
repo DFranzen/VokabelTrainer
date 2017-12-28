@@ -79,5 +79,21 @@
         },
         "is_top_level": true,
         "variables": {}
+    },
+    "cordova-custom-config": {
+        "source": {
+            "type": "registry",
+            "id": "cordova-custom-config"
+        },
+        "is_top_level": true,
+        "variables": {}
+    },
+    "com.manueldeveloper.volume-buttons": {
+        "source": {
+            "type": "registry",
+            "id": "https://github.com/manueldeveloper/cordova-plugin-volume-buttons.git"
+        },
+        "is_top_level": true,
+        "variables": {}
     }
 }

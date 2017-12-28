@@ -2,24 +2,356 @@ var app;
 var FileReader;
 var listAPI;
 var dialog;
+var menu;
 
-var listAPI = {
+menu = {
+    preview: {},
+    previewCount: 0,
+    count:0,
+    sort: "",
+    init: function() {
+    	document.getElementById("InputSearch"). addEventListener("keyup",menu.InputSearch_onKeyUp);
+	document.getElementById("ButtonSearch").addEventListener("click",menu.ButtonSearch_onClick);
+	document.getElementById("ButtonVowel"). addEventListener("click",menu.ButtonVowel_onClick);
+	document.getElementById("ButtonSort").  addEventListener("click",menu.ButtonSort_onClick);
+    },
+    show: function () {
+        'use strict';
+        document.getElementById("listRecent").innerHTML = "";
+	menu.count=0;
+	this.showSortButton();
+        listAPI.elements.forEach(this.htmlAdd);
+	this.htmlBGColor();
+	this.previewCount = 0;
+	listAPI.elements.forEach(this.countWords);
+	this.showPreview();
+    },
+    /* Event handler for the + Button in the List view*/
+    ButtonLoad_onClick: function () {
+        'use strict';
+        window.fileStorage.open(function (uri) {
+            window.listAPI.add(uri, true);
+	    menu.updatePreview(0,false);
+	    menu.show();
+        }, function (error) {
+	    if (error !== 0) {
+		window.alert("Error Opening file: " + error);
+	    }
+        });
+            
+    },
+    preview_onClick: function () {
+        'use strict';
+        app.reverse = !app.reverse;
+        localStorage.setItem('reverse',app.reverse);	
+        menu.showPreview();
+    },
+    ButtonStart_onClick: function () {
+        'use strict';
+        var i;
+        
+        app.fileNames = listAPI.getSelected();
+        app.resetWords();
+
+        if (app.fileNames.length === 0) {
+	    messageBox.show(loc_string.no_files_selected_caption,loc_string.no_files_selected_message);
+            return;
+        }
+
+	app.revisionMode = true; //assume revision mode, correct, if one of the files cannot be in revision Mode
+	
+        app.processed = 0;
+        for (i = 0; i < app.fileNames.length; i += 1) {
+            app.loadLession(app.fileNames[i]);
+        }
+
+        document.getElementById("LectionID").innerHTML = listAPI.getSelectedToString();
+    },
+    ButtonSort_onClick: function() {
+	menu.toggleSort();
+	event.stopPropagation();
+    },
+    ButtonVowel_onClick: function() {
+	menu.toggleVowel();
+	event.stopPropagation();
+    },
+    ButtonSearch_onClick: function() {
+	menu.toggleSearch();
+	//document.getElementById("InputSearch").style.visibility = "visible";
+    },
+    InputSearch_onKeyUp: function() {
+	window.console.log("Keyup on searchbar");
+	menu.show();
+    },
+    /* updates the Preview window after an entry in the list has been toggled
+     * id: id of the toggled list entry
+     * toggled: true if toggled to on, false if toggled to off
+     */
+    updatePreview: function (id, toggled) {
+        'use strict';
+        var showID;
+        if (toggled) {
+            showID = id;
+        } else {
+            showID = listAPI.getFirstSelected();
+        }
+        listAPI.withParsed(
+            showID,
+            function (boxes) {
+                var i = 0;
+                while (boxes[i].length === 0 && i < 6) {
+                    i = i + 1;
+                }
+                if (i < 6) {
+                    menu.preview = boxes[i][0];
+                }
+                menu.showPreview();
+            }
+        );
+    },
+    showPreview: function () {
+        'use strict';
+        
+        var answer,
+            question;
+        
+        if (this.preview.word === undefined) {
+            return;
+        }
+        if (this.preview.translation === undefined) {
+            return;
+        }
+
+        question = (app.reverse)
+            ? menu.preview.translation
+            : menu.preview.word;
+	if (!app.vowels) question = app.removeVowels(question);
+        document.getElementById("prev_question").innerHTML = question;
+        app.matchFont("prev_question");
+
+        answer = (app.reverse)
+            ? menu.preview.word
+            : menu.preview.translation;
+	if (!app.vowels) answer = app.removeVowels(answer);
+        document.getElementById("prev_answer").innerHTML = answer;
+        app.matchFont("prev_answer");
+	document.getElementById("NumWords").innerHTML = menu.previewCount;
+    },
+    countWords: function(element,id) {
+	console.log("counting: " + element.value );
+	if (element.selected) {
+	    listAPI.withParsed(
+		id,
+		function(boxes) {
+		    var i;
+		    for (i=0;i<boxes.length;i++) {
+			menu.previewCount += boxes[i].length;
+		    }
+		}
+	    );
+	}
+    },
+    toggleSearch: function() {
+	var inputSearch = document.getElementById("InputSearch");
+	if (inputSearch.style.visibility === "inherit") {
+	    inputSearch.style.visibility = "hidden";
+	} else {
+	    inputSearch.style.visibility = "inherit";
+	    inputSearch.select();
+	}
+    },
+    htmlBGColor: function() {
+	var list = document.getElementById("listRecent").children,
+	    i;
+
+	for (i = 0; i < list.length; i++) {
+	    if ((i % 2) === 1) {
+		list[i].classList.add("listElementEven");
+	    }
+	}
+    },
+    htmlAdd: function (element, id) {
+        'use strict';
+        var caption = document.createElement("div"),
+            classname,
+            listElement = document.createElement("div"),
+            status  = document.createElement("div"),
+            statusPercent = document.createElement("div"),
+	    fileName,
+	    list,
+	    childid,
+	    childbefore;
+
+
+	fileName = element.value;
+
+        caption.innerHTML = element.caption;
+        caption.className = "listCaption";
+	if (listAPI.notAvail[fileName]) {
+	    caption.classList.add("listCaptionNA");
+	}
+
+        status.className = "listStatusIcon";
+        statusPercent.className = "listStatusPercent";
+
+        listElement.appendChild(status);
+        listElement.appendChild(statusPercent);
+        listElement.appendChild(caption);
+
+        classname = "listElement";
+	if (element.selected) {
+            classname += " listElementSelected";
+	}
+        listElement.className = classname;
+	listElement.id="listElement"+menu.count;
+	menu.count ++;
+        listElement.onclick = function () {
+            menu.clickHandler(id);
+        };
+
+        dialog.activateLongpress(listElement, id);
+	if (!navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry)/)) {
+	    window.console.log("Setting dblClick for " + id + ": " + listElement.innerHTML);
+            listElement.addEventListener("dblclick", function (e) {
+		menu.onlongclick(id,listElement);
+            });
+	}
+	listElement.addEventListener("longclick", function () {  //Just to be able to trigger it programmatically
+	    menu.onlongclick(id,listElement);
+        });
+	    
+
+	list = document.getElementById("listRecent");
+
+	childid = list.children.length; // default is to insert at the end
+
+	if (menu.sort === "alphanum") {
+	    childid = 0;
+	    while ( (childid < list.children.length) &&
+		    (list.children[childid].children[2].innerHTML.toLowerCase() < element.caption.toLowerCase()) ) {
+		childid ++
+	    }
+	} else if (menu.sort ==="munahpla") {
+	    childid = 0;
+	    while ( (childid < list.children.length) &&
+		    (list.children[childid].children[2].innerHTML >= element.caption) ) {
+		childid ++
+	    }
+	}
+	
+	if ( childid < list.children.length ) {
+	    list.insertBefore(listElement,list.children[childid]);
+	} else {
+	    list.appendChild(listElement);
+	}
+
+        listAPI.withParsed(element.value, function (boxes) {
+            menu.showProgress(boxes, status, statusPercent);
+        });
+	
+	listAPI.withParsed(element.value, function(boxes) {
+	    var inputSearch = document.getElementById("InputSearch");
+	    var searchTerm = inputSearch.value;
+	    if (inputSearch.value !== "") {
+		if (!listAPI.findInOne(boxes,searchTerm)) {
+		    listElement.classList.add("listElementDisabled");
+		}
+	    }
+	});
+    },
+
+    showSortButton: function() {
+	if (menu.sort === "alphanum") {
+	    document.getElementById("ButtonSort").src="res/a2z.png";
+	} else if (menu.sort === "munahpla") {
+	    document.getElementById("ButtonSort").src="res/z2a.png";
+	} else {
+	    document.getElementById("ButtonSort").src="res/recent.png";
+	}
+    },
+    toggleSort: function() {
+	if (menu.sort === "alphanum") {
+	    menu.sort = "munahpla";
+	} else if (menu.sort === "munahpla") {
+	    menu.sort = "recent";
+	} else {
+	    menu.sort = "alphanum";
+	}
+	menu.show();
+    },
+    toggleVowel: function() {
+	'use strict';
+	var src;
+	
+	app.vowels = !app.vowels;
+	src = (app.vowels) ? "res/vowels.png" : "res/novowels.png";
+	document.getElementById("ButtonVowel").src = src;
+	menu.showPreview();
+    },
+    showProgress: function (boxes, iconNode, percentNode) {
+        'use strict';
+        iconNode.innerHTML = "";
+        var color = ["#e0a8a8", "#e0c4a8", "#e0dfa8", "#cde0a8", "#b7e0a8", "#b7e0a8"],
+            div,
+            i,
+            progress = 0,
+            total = 0;
+
+        for (i = 0; i <= 5; i += 1) {
+            div = document.createElement("div");
+            div.className = "listStatusLayer";
+            div.style.backgroundColor = color[i];
+            div.style.flexGrow = boxes[i].length;
+
+            iconNode.appendChild(div);
+
+            progress += boxes[i].length * Math.min(i,4) * 25;
+            total += boxes[i].length;
+        }
+
+	if (total !== 0) {
+            percentNode.innerHTML = Math.floor(progress / total) + "%";
+	    percentNode.classList.remove("listStatusPercentWarn");
+	} else {
+	    percentNode.innerHTML = "!";
+	    percentNode.classList.add("listStatusPercentWarn");
+	    percentNode.parentNode.style.color = "grey";
+	}
+    },
+    clickHandler: function (id) {
+        'use strict';
+        listAPI.toggle(id);
+        menu.show();
+
+	menu.updatePreview(id, listAPI.elements[listAPI.getId(id)].selected);
+    },
+    onlongclick: function (id,htmlElement) {
+        'use strict';
+	window.console.log("Executing longclick for " + id + ": " + htmlElement.innerHTML);
+
+        dialog.show(id,htmlElement);
+    },
+
+}
+
+listAPI = {
     elements: [],
     data: {},
     parsed: {},
     divider: {},
     notAvail: {},
-    lastClicked: "",
-    
-    /* Initialises the API */
-    init: function (elements) {
-        'use strict';
-	if (elements === null) elements = [];
-	listAPI.elements = elements;
-        listAPI.untoggleAll();
-	document.getElementById("InputSearch").addEventListener("keyup",listAPI.InputSearch_onKeyUp);
-        listAPI.show();
 
+    /* Initialises the API */
+    init: function () {
+        'use strict';
+	if (localStorage.getItem('recentFiles') !== null) {
+            listAPI.elements =  JSON.parse(localStorage.getItem('recentFiles'));
+        } else {
+	    this.elements = [];
+	}
+	
+        listAPI.untoggleAll();
+	listAPI.notAvail = {};
     },
     /* Returns array of all Selected URIs */
     getSelected: function () {
@@ -100,7 +432,7 @@ var listAPI = {
         }
         return result;
     },
-    /* resets all words to level 0 in the fiven boxes */
+    /* resets all words to level 0 in the given boxes */
     reset: function (boxes) {
         'use strict';
         var i, j,
@@ -200,9 +532,7 @@ var listAPI = {
             newWord,
 	    divider;
 
-//	window.alert("Searching for divider");
-	divider = listAPI.getDivider(lines); //listAPI.getDivider(lines);
-//	window.alert("Found divider " + divider);
+	divider = listAPI.getDivider(lines); 
 	
         for (i = 0; i < lines.length; i += 1) {
             if (lines[i].trim() === "-") {
@@ -253,26 +583,6 @@ var listAPI = {
         }
         return;
     },
-    /* passes one line containing a word from an element to the callback function, loads the file if necessary
-     *   id: id of the element to be previewed, might be uri or index of the element
-     *   ready: callback to be passed the preview line
-     *          ready: function (line)
-     *   return: None
-     */
-    withPreview: function (fileName, ready) {
-        'use strict';
-
-        var selectPreview = function (data) {
-            var i = 0,
-                lines = data.split("\n");
-            while (lines[i].trim() === "-") {
-                i += 1;
-            }
-            ready(lines[i]);
-        };
-        this.withData(fileName, selectPreview);
-        return;
-    },
     /* passes the parsed content from an element to the given callback function. Starts parser if necessary.
      *   id: id of the element to be parsed, mightBe uri or index of element
      *   ready: callback function to be passed the parsed data.
@@ -315,8 +625,9 @@ var listAPI = {
         var loadFile, loadFileEntry;
 
         if (fileName === "test") {
-            listAPI.data[fileName] = "عين / عيون" + app.divider + "Auge" + "\n-\n" + "كلمة" + app.divider + "word\n"
-                + "حُمّى" + app.divider + "Fieber\nبوْل" + app.divider + "Urin\nعمود فقري" + app.divider + "Wirbelsäule\nصدر / صدور" + app.divider + "Brust\nعضو / أعضاء" + app.divider + "Körperteil, Organ\nشفه / شفاه" + app.divider + "Lippe\nعُنُق / أعناق" + app.divider + "Hals";
+            listAPI.data[fileName] = "عين / عيون;Auge" + "\n-\n" +
+		"كلمة;word\nحُمّى;Fieber\nبوْل;Urin\nعمود فقري;Wirbelsäule\nصدر / صدور;Brust\nعضو / أعضا" + 
+		"ء;Körperteil, Organ\nشفه / شفاه;Lippe\nعُنُق / أعناق;Hals";
             ready(listAPI.data[fileName]);
         } else {
 	    if (listAPI.notAvail[fileName] === true) {
@@ -343,7 +654,7 @@ var listAPI = {
         'use strict';
         delete listAPI.data[element];
         delete listAPI.parsed[element];
-        listAPI.show();
+	delete listAPI.notAvail[element];
     },
     /* convert a box of words into a string, ready to be written to the file
      *   box: array of word objects to be written
@@ -389,9 +700,9 @@ var listAPI = {
             return;
         }
 
-        window.fileStorage.writeToUri(function () {}, function (error) {window.alert("Error while writing to file, Progress might get lost"); }, fileName, data);
-        
-        listAPI.show();
+        window.fileStorage.writeToUri(function () {}, function (error) {
+	    window.alert("Error while writing to file, Progress might get lost");
+	}, fileName, data);
     },
     getId: function (element) {
         'use strict';
@@ -428,8 +739,6 @@ var listAPI = {
 	add_helper = function(name) {
 	    listAPI.elements.unshift({caption: name, value: uri, selected: selected, added: added, used: used});
 	    localStorage.setItem("recentFiles", JSON.stringify(listAPI.elements));
-            listAPI.show();
-	    app.updatePreview(0,false);
 	}
 
 	
@@ -478,7 +787,6 @@ var listAPI = {
 
         this.elements.splice(0, 0, this.elements.splice(id, 1)[0]);
         localStorage.setItem("recentFiles", JSON.stringify(listAPI.elements));
-        this.show();
     },
     toggle: function (element) {
         'use strict';
@@ -494,151 +802,6 @@ var listAPI = {
         for (i = 0; i < listAPI.elements.length; i += 1) {
             listAPI.elements[i].selected = false;
         }
-    },
-    show: function () {
-        'use strict';
-        document.getElementById("listRecent").innerHTML = "";
-	this.showSortButton();
-        this.elements.forEach(this.htmlAdd);
-	this.htmlBGColor();
-    },
-    showSortButton: function() {
-	if (listAPI.sort === "alphanum") {
-	    document.getElementById("ButtonSort").src="res/a2z.png";
-	} else if (listAPI.sort === "munahpla") {
-	    document.getElementById("ButtonSort").src="res/z2a.png";
-	} else {
-	    document.getElementById("ButtonSort").src="res/recent.png";
-	}
-    },
-    toggleSort: function() {
-	if (listAPI.sort === "alphanum") {
-	    listAPI.sort = "munahpla";
-	} else if (listAPI.sort === "munahpla") {
-	    listAPI.sort = "recent";
-	} else {
-	    listAPI.sort = "alphanum";
-	}
-	listAPI.show();
-    },
-    toggleVowel: function() {
-	'use strict';
-	var src;
-	
-	app.vowels = !app.vowels;
-	src = (app.vowels) ? "res/vowels.png" : "res/novowels.png";
-	document.getElementById("ButtonVowel").src = src;
-	app.showPreview();
-    },
-    toggleSearch: function() {
-	var inputSearch = document.getElementById("InputSearch");
-	if (inputSearch.style.visibility === "inherit") {
-	    inputSearch.style.visibility = "hidden";
-	    listAPI.show();
-	} else {
-	    inputSearch.style.visibility = "inherit";
-	    inputSearch.select();
-	}
-    },
-    htmlBGColor: function() {
-	var list = document.getElementById("listRecent").children,
-	    i;
-
-	for (i = 0; i < list.length; i++) {
-	    if ((i % 2) === 1) {
-		list[i].classList.add("listElementEven");
-	    }
-	}
-    },
-    htmlAdd: function (element, id) {
-        'use strict';
-        var caption = document.createElement("div"),
-            classname,
-            listElement = document.createElement("div"),
-            status  = document.createElement("div"),
-            statusPercent = document.createElement("div"),
-	    fileName,
-	    list,
-	    childid,
-	    childbefore;
-
-
-	fileName = element.value;
-
-        caption.innerHTML = element.caption;
-        caption.className = "listCaption";
-	if (listAPI.notAvail[fileName]) {
-	    caption.classList.add("listCaptionNA");
-	}
-
-        status.className = "listStatusIcon";
-        statusPercent.className = "listStatusPercent";
-
-        listElement.appendChild(status);
-        listElement.appendChild(statusPercent);
-        listElement.appendChild(caption);
-
-        classname = "listElement";
-        /*if ((id % 2) === 1) {
-            classname += " listElementEven";
-        }
-        if (element.selected) {
-        if (id % 2 === 1) {*/
-	if (element.selected) {
-            classname += " listElementSelected";
-	}
-	/*} else {
-                classname += " listElementEvenSelected";
-            }
-        }*/
-        listElement.className = classname;
-        listElement.onclick = function () {
-            listAPI.clickHandler(id);
-        };
-
-        dialog.activateLongpress(listElement, id);
-        listElement.addEventListener("dblclick", function () {
-            listAPI.onlongclick(id);
-        });
-
-	list = document.getElementById("listRecent");
-
-	childid = list.children.length; // default is to insert at the end
-
-	if (listAPI.sort === "alphanum") {
-	    childid = 0;
-	    while ( (childid < list.children.length) &&
-		    (list.children[childid].children[2].innerHTML.toLowerCase() < element.caption.toLowerCase()) ) {
-		childid ++
-	    }
-	} else if (listAPI.sort ==="munahpla") {
-	    childid = 0;
-	    while ( (childid < list.children.length) &&
-		    (list.children[childid].children[2].innerHTML >= element.caption) ) {
-		childid ++
-	    }
-	}
-	
-	if ( childid < list.children.length ) {
-	    list.insertBefore(listElement,list.children[childid]);
-	} else {
-	    list.appendChild(listElement);
-	}
-
-        listAPI.withParsed(element.value, function (boxes) {
-            listAPI.showProgress(boxes, status, statusPercent);
-        });
-
-	
-	listAPI.withParsed(element.value, function(boxes) {
-	    var inputSearch = document.getElementById("InputSearch");
-	    var searchTerm = inputSearch.value;
-	    if (inputSearch.value !== "") {
-		if (!listAPI.findInOne(boxes,searchTerm)) {
-		    listElement.classList.add("listElementDisabled");
-		}
-	    }
-	});
     },
     findInOne: function(boxes,searchTerm) {
 	var i,j, word, tans;
@@ -657,38 +820,188 @@ var listAPI = {
 	}
 	return false;
     },
-    showProgress: function (boxes, iconNode, percentNode) {
+};
+	
+
+dialog = {
+    currentTab: "",
+    currentTabChooser: "",
+    currentShownId: "",
+    nextTab: "",
+    nextTabChooser: "",
+    init: function () {
         'use strict';
-        iconNode.innerHTML = "";
-        var color = ["#e0a8a8", "#e0c4a8", "#e0dfa8", "#cde0a8", "#b7e0a8", "#b7e0a8"],
-            div,
-            i,
-            progress = 0,
-            total = 0;
+        document.getElementById("InfoChooser").onclick = function () {
+            dialog.showTab("InfoContent", "InfoChooser");
+        };
+        document.getElementById("ListChooser").onclick = function () {
+            dialog.showTab("ListContent", "ListChooser");
+        };
+        document.getElementById("OptionChooser").onclick = function () {
+            dialog.showTab("OptionContent", "OptionChooser");
+        };
 
-        for (i = 0; i <= 5; i += 1) {
-            div = document.createElement("div");
-            div.className = "listStatusLayer";
-            div.style.backgroundColor = color[i];
-            div.style.flexGrow = boxes[i].length;
-
-            iconNode.appendChild(div);
-
-            progress += boxes[i].length * Math.min(i,4) * 25;
-            total += boxes[i].length;
+	
+	
+	dialog.hide();
+    },
+    showTab: function (id, chooserId) {
+        'use strict';
+        var divs = document.getElementsByClassName("DialogTab"),
+            i;
+        for (i = 0; i < divs.length; i += 1) {
+            divs[i].style.visibility = "hidden";
+            divs[i].style.overflow = "hidden";
         }
 
-	if (total !== 0) {
-            percentNode.innerHTML = Math.floor(progress / total) + "%";
-	    percentNode.classList.remove("listStatusPercentWarn");
-	} else {
-	    percentNode.innerHTML = "!";
-	    percentNode.classList.add("listStatusPercentWarn");
-	    percentNode.parentNode.style.color = "grey";
-	}
-        //	    node.innerHTML = boxes[0].length;
-        //	    node.style.backgroundColor = color[0];
+        divs = document.getElementsByClassName("DialogChooser");
+        for (i = 0; i < divs.length; i += 1) {
+            divs[i].classList.remove("DialogChooserSelected");
+        }
+
+        if (id === "") {
+            return;
+        }
+
+        document.getElementById(id).style.visibility = "inherit";
+        document.getElementById(id).style.overflow = "auto";
+        document.getElementById(chooserId).classList.add("DialogChooserSelected");
+	dialog.currentTab = id;
+	dialog.currentTabChooser = chooserId;
     },
+    showNext: function (e) {
+	var next = document.getElementById(dialog.currentShownId).nextSibling;
+	window.console.log("trying sibling: " + next);	
+	
+	while ( (next !== null) && (next.classList.contains("listElementDisabled")) ) {
+	    next=next.nextSibling;
+	    window.console.log("trying sibling: " + next);
+	}
+	window.console.log("Showing details for " + next);
+
+	if (next !== null) {
+	    dialog.nextTab = dialog.currentTab;
+	    dialog.nextTabChooser = dialog.currentTabChooser;
+	    dialog.hide();
+	    next.dispatchEvent(new Event("longclick"));
+	}
+	e.stopPropagation();
+	    
+    },
+    showPrev: function (e) {
+	var next = document.getElementById(dialog.currentShownId).previousSibling;
+	
+	while ( (next !== null) && (next.classList.contains("listElementDisabled")) ) {
+	    window.console.log("trying sibling: " + next);
+	    next=next.previousSibling;
+	}
+	window.console.log("Showing details for " + next);
+
+	if (next !== null) {
+	    dialog.nextTab = dialog.currentTab;
+	    dialog.nextTabChooser = dialog.currentTabChooser;
+	    dialog.hide();
+	    next.dispatchEvent(new Event("longclick"));
+	}
+	e.stopPropagation();
+	
+    },
+    hide: function () {
+        'use strict';
+        var divs,
+            i;
+        dialog.showTab("", "");
+        divs = document.getElementsByClassName("Details");
+
+        for (i = 0; i < divs.length; i += 1) {
+            divs[i].style.visibility = "hidden";
+        }
+    },
+    show: function (id, htmlElement) {
+        'use strict';
+
+	window.console.log("Display Details for " + id + ": " + htmlElement.innerHTML);
+
+        var divs,
+            fontSize = 200,
+            i;
+
+	dialog.currentShownId = htmlElement.id;
+	window.console.log("Shown Element has id " + dialog.currentShownId);
+	
+        document.getElementById("dialogHeader").innerHTML = listAPI.elements[id].caption;
+        document.getElementById("dialogHeader").style.lineHeight = "2em";
+        document.getElementById("dialogHeader").style.fontSize = "200%";
+        while (document.getElementById("dialogHeader").scrollHeight > document.getElementById("dialogHeader").offsetHeight) {
+            fontSize -= 10;
+            document.getElementById("dialogHeader").style.fontSize = fontSize + "%";
+        }
+        document.getElementById("dialogHeader").style.lineHeight = 2 / fontSize * 200 + "em";
+
+
+	var fileName = listAPI.elements[id].value;
+        document.getElementById("dialogFullPath").innerHTML = fileName;
+	if (listAPI.notAvail[fileName]) {
+	    var fileNameMessage = fileName + "<br><p style='color:red'>This file is not available, please add it again</p>";
+	    document.getElementById("dialogFullPath").innerHTML = fileNameMessage;
+	}
+	
+        document.getElementById("dialogAdded").innerHTML = listAPI.getAdded(id);
+        document.getElementById("dialogUsed").innerHTML = listAPI.getUsed(id);
+        listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
+            menu.showProgress(
+                boxes,
+                document.getElementById("dialogProgress"),
+                document.getElementById("dialogProgressPercent")
+            );
+        });
+        listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
+            dialog.showCount(boxes, document.getElementById("dialogCount"));
+        });
+	
+	listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
+	    dialog.showList(boxes, document.getElementById("dialogListDiv"));
+	});
+
+        document.getElementById("dialogBack").onclick = dialog.hide;
+        document.getElementById("dialogVeil").onclick = dialog.hide;
+        document.getElementById("dialog").onclick = function (event) {
+            event.stopPropagation();
+        };
+
+        document.getElementById("dialogRemove").onclick = function () {
+            dialog.hide();
+            listAPI.remove(id);
+	    menu.show();
+        };
+        document.getElementById("dialogRevert").onclick = function () {
+            listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
+                listAPI.writeParsed(listAPI.elements[id].value, listAPI.revert(boxes));
+                menu.updatePreview(id, listAPI.elements[id].selected);
+            });
+        };
+        document.getElementById("dialogReset").onclick = function () {
+            listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
+                listAPI.writeParsed(listAPI.elements[id].value, listAPI.reset(boxes));
+                menu.show();
+            });
+        };
+
+        divs = document.getElementsByClassName("Details");
+        for (i = 0; i < divs.length; i += 1) {
+            divs[i].style.visibility = "inherit";
+        }
+	if (dialog.nextTab === "") {
+	    dialog.nextTab = "InfoContent";
+	    dialog.nextTabChooser = "InfoChooser";
+	}
+        dialog.showTab(dialog.nextTab, dialog.nextTabChooser);
+	dialog.nextTab = "";
+	dialog.nextTabChooser = "";
+	
+	    
+    },
+
     showCount: function (boxes, node) {
         'use strict';
 	var i,c = 0;
@@ -715,10 +1028,10 @@ var listAPI = {
 		tdt.classList.add("tdLeftBorder");
 		bgClass = ((count % 2) === 0) ? "trEven" : "trOdd";
 		tr.classList.add(bgClass);
-		searchTerm = document.getElementById("InputSearch").value.toLowerCase();
+		searchTerm = app.removeVowels(document.getElementById("InputSearch").value.toLowerCase());
 		if ( (searchTerm !== "") &&
-		     ( (boxes[i][j].word.toLowerCase().indexOf(searchTerm) !== -1) ||
-		       (boxes[i][j].translation.toLowerCase().indexOf(searchTerm) !== -1)
+		     ( (app.removeVowels(boxes[i][j].word).toLowerCase().indexOf(searchTerm) !== -1) ||
+		       (app.removeVowels(boxes[i][j].translation).toLowerCase().indexOf(searchTerm) !== -1)
 		     )
 		   ) {
 		    tr.classList.add("trFound");
@@ -729,172 +1042,19 @@ var listAPI = {
 		count++;
 	    }
 	}
-	    
     },
-    clickHandler: function (id) {
-        'use strict';
-        listAPI.toggle(id);
-        listAPI.show();
 
-        listAPI.onclick(id, listAPI.elements[listAPI.getId(id)].selected);
-    },
-    showDialog: function (id) {
-        'use strict';
-
-    },
-    onclick: function (id) {
-        'use strict';
-
-    },
-    onlongclick: function (id) {
-        'use strict';
-        dialog.show(id);
-    },
-    ButtonSort_onClick: function() {
-	listAPI.toggleSort();
-	event.stopPropagation();
-    },
-    ButtonVowel_onClick: function() {
-	listAPI.toggleVowel();
-	event.stopPropagation();
-    },
-    ButtonSearch_onClick: function() {
-	listAPI.toggleSearch();
-	//document.getElementById("InputSearch").style.visibility = "visible";
-    },
-    InputSearch_onKeyUp: function() {
-	window.console.log("Keyup on searchbar");
-	listAPI.show();
-    }
-};
-	
-
-dialog = {
-    init: function () {
-        'use strict';
-        document.getElementById("InfoChooser").onclick = function () {
-            dialog.showTab("InfoContent", "InfoChooser");
-        };
-        document.getElementById("ListChooser").onclick = function () {
-            dialog.showTab("ListContent", "ListChooser");
-        };
-        document.getElementById("OptionChooser").onclick = function () {
-            dialog.showTab("OptionContent", "OptionChooser");
-        };
-    },
-    showTab: function (id, chooserId) {
-        'use strict';
-        var divs = document.getElementsByClassName("DialogTab"),
-            i;
-        for (i = 0; i < divs.length; i += 1) {
-            divs[i].style.visibility = "hidden";
-            divs[i].style.overflow = "hidden";
-        }
-
-        divs = document.getElementsByClassName("DialogChooser");
-        for (i = 0; i < divs.length; i += 1) {
-            divs[i].classList.remove("DialogChooserSelected");
-        }
-
-        if (id === "") {
-            return;
-        }
-
-        document.getElementById(id).style.visibility = "inherit";
-        document.getElementById(id).style.overflow = "auto";
-        document.getElementById(chooserId).classList.add("DialogChooserSelected");
-    },
-    hide: function () {
-        'use strict';
-        var divs,
-            i;
-        dialog.showTab("", "");
-        divs = document.getElementsByClassName("Details");
-
-        for (i = 0; i < divs.length; i += 1) {
-            divs[i].style.visibility = "hidden";
-        }
-    },
-    show: function (id) {
-        'use strict';
-
-        var divs,
-            fontSize = 200,
-            i;
-
-        document.getElementById("dialogHeader").innerHTML = listAPI.elements[id].caption;
-        document.getElementById("dialogHeader").style.lineHeight = "2em";
-        document.getElementById("dialogHeader").style.fontSize = "200%";
-        while (document.getElementById("dialogHeader").scrollHeight > document.getElementById("dialogHeader").offsetHeight) {
-            fontSize -= 10;
-            document.getElementById("dialogHeader").style.fontSize = fontSize + "%";
-        }
-        document.getElementById("dialogHeader").style.lineHeight = 2 / fontSize * 200 + "em";
-
-
-	var fileName = listAPI.elements[id].value;
-        document.getElementById("dialogFullPath").innerHTML = fileName;
-	if (listAPI.notAvail[fileName]) {
-	    var fileNameMessage = fileName + "<br><p style='color:red'>This file is not available, please add it again</p>";
-	    document.getElementById("dialogFullPath").innerHTML = fileNameMessage;
-	}
-	
-        document.getElementById("dialogAdded").innerHTML = listAPI.getAdded(id);
-        document.getElementById("dialogUsed").innerHTML = listAPI.getUsed(id);
-        listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
-            listAPI.showProgress(
-                boxes,
-                document.getElementById("dialogProgress"),
-                document.getElementById("dialogProgressPercent")
-            );
-        });
-        listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
-            listAPI.showCount(boxes, document.getElementById("dialogCount"));
-        });
-	
-	listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
-	    listAPI.showList(boxes, document.getElementById("dialogListDiv"));
-	});
-
-        document.getElementById("dialogBack").onclick = dialog.hide;
-        document.getElementById("dialogVeil").onclick = dialog.hide;
-        document.getElementById("dialog").onclick = function (event) {
-            event.stopPropagation();
-        };
-
-        document.getElementById("dialogRemove").onclick = function () {
-            dialog.hide();
-            listAPI.remove(id);
-        };
-        document.getElementById("dialogRevert").onclick = function () {
-            listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
-                listAPI.writeParsed(listAPI.elements[id].value, listAPI.revert(boxes));
-                app.updatePreview(id, listAPI.elements[id].selected);
-            });
-        };
-        document.getElementById("dialogReset").onclick = function () {
-            listAPI.withParsed(listAPI.elements[id].value, function (boxes) {
-                listAPI.writeParsed(listAPI.elements[id].value, listAPI.reset(boxes));
-                listAPI.show();
-            });
-        };
-
-        divs = document.getElementsByClassName("Details");
-        for (i = 0; i < divs.length; i += 1) {
-            divs[i].style.visibility = "inherit";
-        }
-        dialog.showTab("InfoContent", "InfoChooser");
-    },
     
     longpress: false,
     presstimer: null,
     longtarget: null,
+    longpressCords: null,
 
     cancel: function (e) {
         'use strict';
         if (dialog.presstimer !== null) {
             clearTimeout(dialog.presstimer);
-            dialog.presstimer = null;
+	    dialog.presstimer = null;
         }
 
         this.classList.remove("longpress");
@@ -914,10 +1074,11 @@ dialog = {
         }
     },
 
-    start: function (id) {
+    start: function (id,htmlElement) {
         'use strict';
         return function (e) {
             window.console.log(e);
+	    window.console.log(htmlElement);
 
             if (e.type === "click" && e.button !== 0) {
                 return;
@@ -929,7 +1090,7 @@ dialog = {
 
             dialog.presstimer = setTimeout(function () {
                 dialog.presstimer = null;
-                listAPI.onlongclick(id);
+                menu.onlongclick(id,htmlElement);
                 dialog.longpress = true;
             }, 700);
 
@@ -939,13 +1100,15 @@ dialog = {
 
     activateLongpress: function (node, id) {
         'use strict';
-        //    node.addEventListener("mousedown", start(id));
-        node.addEventListener("touchstart", dialog.start(id));
+	window.console.log("Activating longpress for: " + node);
+        node.addEventListener("mousedown", dialog.start(id,node));
+        node.addEventListener("touchstart", dialog.start(id,node));
         node.addEventListener("click", dialog.click);
-        //    node.addEventListener("mouseout", cancel);
+        node.addEventListener("mouseout", dialog.cancel);
         node.addEventListener("touchend", dialog.cancel);
         node.addEventListener("touchleave", dialog.cancel);
         node.addEventListener("touchcancel", dialog.cancel);
+	node.addEventListener("touchmove", dialog.cancel);
     }
 
 };

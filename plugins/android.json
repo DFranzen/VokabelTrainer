@@ -24,6 +24,12 @@
         },
         "cordova-plugin-file": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-custom-config": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "com.manueldeveloper.volume-buttons": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         }
     },
     "dependent_plugins": {

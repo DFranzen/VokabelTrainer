@@ -5,33 +5,46 @@
  *  - Lektionen umbennen / duplizieren / erstellen
  *  - Wörter hinzufügen
  *  - Wörter editieren in List view
- *  - Blättern zum nächsten File in List view
  *  - mark / unmark alle files im file view
- *  - #(words) auf der Vorschau
  *  - Optionales Zeitlimit im Wiederholungsmodus
+ *  - Blättern mit swipe im File view
+ *  - Font-size über app-neustart speichern
+ *  - css icons zum blättern im Detail dialog
  * *** Bugs
- *  - Message Dialog does not close on back
- *  - Message Dialog shows during startup
- *  - Message Dialog says continue if #(6) = all
- *  - Double click fires sometimes with multiple clicks or swipes
- *  - Font-size after edit
  *  - Check file availability after wake
  *  - Delete leftovers of deleted files to enable readd of broken files
- *  - 
+ *  - Change outer margins of table in Detail list view 
  * *** Ideas
  *  - picture vokabelListen
  *  - localise
+ * *** Progress
+ *  - BUG: Double click fires sometimes with multiple clicks or swipes
+ *  - BUG: Message Dialog does not close on back
+ *  - BUG: Message Dialog says continue if #(6) = all
+ *  - BUG: Message dialog shows on startup
+ *  - BUG: Undo circle not decreasing after half way
+ *  - BUG: Font-size after edit
+ *  - BUG: Files do not combine correctly into repetition mode, when #(4)=all
+ *  - #(words) auf der Vorschau
  *  - change font-size in file view with volumne rocker
+ *  - Blättern zum nächsten File in List view
+ *  - added ViewMaster to control the views
+ *  - Modularised trainingView out of app and menu out of listAPI
  */
 
-var Dragend = window.Dragend;
-var listAPI = window.listAPI;
-var dialog = window.dialog;
-var cordova = window.cordova;
-var editDialog;
+var Dragend = window.Dragend,
+    listAPI = window.listAPI,
+    dialog = window.dialog,
+    cordova = window.cordova,
+    trainigView = window.trainingView,
+    ViewMaster,
+    messageBox,
+    menu = window.menu,
+    editDialog,
+    app;
 
-var loc_string = {
-    revision_start_caption: "Congratulation",
+var loc_string_eng = {
+    revision_start_caption: "Well done",
     revision_start_message: "You have learned all your words. Now we start repetition mode",
     revision_end_caption: "Complete",
     revision_end_message: "You have finished your revision. Now practise the words you did not know",
@@ -41,67 +54,130 @@ var loc_string = {
     no_files_selected_message: "First add or select the files you want to practise and then hit the start button"
 };
 
-var app = {
-    swipe: null,
-    currentView: "",
+var loc_string_de = {
+    revision_start_caption: "Bravo",
+    revision_start_message: "Du hast alle Vokabeln gelernt. Jetzt geht's an die Wiederholung",
+    revision_end_caption: "Fertig",
+    revision_end_message: "Du hast die Wiederholung abgeschlossen. Lerne jetzt die Vokabel, die du nicht wußtest",
+    revision_restart_caption: "Wiederholungsphase",
+    revision_restart_message: "Setze die Wiederholung fort",
+    no_files_selected_caption: "Keine Dateien ausgewählt",
+    no_files_selected_message: "Wähle erst die Dateien aus, die du lernen willst. Danach drücke den grünen Start Knopf"
+}
 
+var loc_string = loc_string_eng;
+
+ViewMaster = {
+    currentView: "",
+    views: {},
+    viewStack: [],
+    registerView: function(name, htmlClass, jsClass, overlay) {
+	window.console.log("Registering view " + name);
+	if (overlay === undefined) {
+	    overlay=false;
+	}
+	this.views[name] = {
+	    htmlClass: htmlClass,
+	    jsClass: jsClass,
+	    overlay: overlay,
+	};
+	if (jsClass.init !== undefined) {
+	    jsClass.init();
+	}
+    },
+    hideAll: function() {
+	var viewName;
+	for (viewName in this.views) {
+	    this.hide(viewName);
+	}
+    },
+    hide: function(viewName) {
+	'use strict';
+	
+        var divs = document.getElementsByClassName(this.views[viewName].htmlClass),
+            div;
+        for (div = 0; div < divs.length; div = div + 1) {
+            divs[div].style.visibility = "hidden";
+        }
+    },
+    show: function(viewName,push) {
+	'use strict';
+
+	if (push === undefined) push=true;
+
+	if (this.views[viewName] === undefined) {
+	    window.alert("Error:\nTrying to open an undefined view: " + viewName);
+	}
+	
+	var divs = document.getElementsByClassName(this.views[viewName].htmlClass),
+            div;
+	
+	if (this.currentView !== "") {
+	    if (push) {
+		this.viewStack.push(this.currentView);
+	    }
+	}
+	this.currentView = viewName;
+
+	if (!this.views[viewName].overlay) {
+	    this.hideAll();
+	}
+
+        for (div = 0; div < divs.length; div = div + 1) {
+            divs[div].style.visibility = "visible";
+        }
+	if (this.views[viewName].jsClass.show !== undefined) {
+	    window.console.log("Calling show on current View: " + viewName);
+	    this.views[viewName].jsClass.show();
+	}
+    },
+    closeCurrent: function() {
+	var last= this.currentView;
+	if ( (this.currentView === "") || (this.viewStack.length === 0) ) {
+	    return navigator.app.exitApp();
+	}
+	
+	if (this.views[last].jsClass !== undefined) {
+	    if (this.views[last].jsClass.close !== undefined) {
+		window.console.log("Calling close on current view");
+		this.views[last].jsClass.close();
+	    }
+	}
+
+	this.hide(this.currentView);
+	this.currentView=this.viewStack.pop();
+	if (!this.views[last].overlay) {
+	    window.console.log("showing view through ViewMaster");
+	    this.show(this.currentView,false);
+	} else {
+	    if (this.views[this.currentView].show !== undefined) {
+		window.console.log("showing view by itself");
+		this.views[this.currentView].show();
+	    }
+	}
+    },
+    pause: function() {
+	if (this.views[this.currentView] === undefined) return;
+	if (this.views[this.currentView].jsClass === undefined) return;
+	if (this.views[this.currentView].jsClass.pause !== undefined) {
+	    this.views[this.currentView].jsClass.pause();
+	}
+    }
+}
+
+app = {
     words: [[], [], [], [], [], []],
     currentBox: 0,
     currentWord: {},
     lastBox: 0,
 
     revisionMode: false,
-//    revisionBox: [],
 
     fileNames: [],
     loadingFileIndex: 0,
-    divider: ";",
 
     reverse: false,
     vowels: true,
-    preview: {},
-
-    fonts: [
-        "Arial",
-        "serif",
-        "sans-serif",
-        "Times New Roman",
-        "Verdana",
-        "Comic sans MS",
-        "WildWest",
-        "Bedrock",
-        "helvetica",
-        "Helvetica",
-        'HelveticaNeue-Light',
-        'HelveticaNeue',
-        "Times",
-        "Geeza Pro",
-        "Nadeem",
-        "Al Bayan",
-        "DecoType Naskh",
-        "DejaVu Serif",
-        "STFangsong",
-        "STHeiti",
-        "STKaiti",
-        "STSong",
-        "AB AlBayan",
-        "AB Geeza",
-        "AB Kufi",
-        "DecoType Naskh",
-        "Aldhabi",
-        "Andalus",
-        "Sakkal Majalla",
-        "Simplified Arabic",
-        "Traditional Arabic",
-        "Arabic Typesetting",
-        "Urdu Typesetting",
-        "Droid Naskh",
-        "Droid Kufi",
-        "Roboto",
-        "Tahoma"
-    ],
-    currentFont: -1,
-
 
     // Application Constructor
     initialize: function () {
@@ -112,7 +188,6 @@ var app = {
 	} else {
             window.addEventListener("load",app.onDeviceReady,false);
 	}
-        
     },
 
     // deviceready Event Handler
@@ -120,87 +195,29 @@ var app = {
     onDeviceReady: function () {
         'use strict';
 
-	var elements = [];
-	// app starts in ListView
-        app.activateMenu();
-
-	// initialise Swipe
-        app.swipe = new Dragend(document.getElementById("swipeArea"), {
-            pageClass: "dragend-page",
-            direction: "horizontal",
-            onSwipeEnd: app.moveSwipe
-        });
-
 	// listen to Android events
         document.addEventListener("backbutton", app.backButton_onClick);
         document.addEventListener("pause", app.onPause);
         window.addEventListener("orientationchange", app.onRotate);
+	
+	document.addEventListener("volumedownbutton", function() {app.decFontSize() });
+	document.addEventListener("volumeupbutton", function() {app.incFontSize() });
+	app.incFontSize("10px");
 
+	listAPI.init();
+	
 	// load saved values
-        if (localStorage.getItem('recentFiles') !== null) {
-            elements =  JSON.parse(localStorage.getItem('recentFiles'));
-        }
-	if (localStorage.getItem('reverse') !== null) {
+        if (localStorage.getItem('reverse') !== null) {
 	    app.reverse = localStorage.getItem('reverse');
 	}
 	
 	// initialise List view
-        listAPI.onclick = app.updatePreview;
-        listAPI.init(elements);
-
-	//initialise Dialogs
-        dialog.init();
-        editDialog.init();
-	messageBox.init();
-    },
-    updatePreview: function (id, toggled) {
-        'use strict';
-        var showID;
-        if (toggled) {
-            showID = id;
-        } else {
-            showID = listAPI.getFirstSelected();
-        }
-        listAPI.withParsed(
-            showID,
-            function (boxes) {
-                var i = 0;
-                while (boxes[i].length === 0 && i < 6) {
-                    i = i + 1;
-                }
-                if (i < 6) {
-                    app.preview = boxes[i][0];
-                }
-                app.showPreview();
-            }
-        );
-    },
-    showPreview: function () {
-        'use strict';
-        
-        var answer,
-            question;
-        
-        if (app.preview.word === undefined) {
-            return;
-        }
-        if (app.preview.translation === undefined) {
-            return;
-        }
-
-        question = (app.reverse)
-            ? app.preview.translation
-            : app.preview.word;
-	if (!app.vowels) question = app.removeVowels(question);
-        document.getElementById("prev_question").innerHTML = question;
-        app.matchFont("prev_question");
-
-        answer = (app.reverse)
-            ? app.preview.word
-            : app.preview.translation;
-	if (!app.vowels) answer = app.removeVowels(answer);
-        document.getElementById("prev_answer").innerHTML = answer;
-        app.matchFont("prev_answer");
+	ViewMaster.registerView("menu","Menu",menu);
+	ViewMaster.registerView("training","Training",trainingView);
+	ViewMaster.registerView("details","Details",dialog, true);
+	ViewMaster.registerView("edit","edit",editDialog, true);
+	ViewMaster.registerView("message","MessageBox",messageBox, true);
+	ViewMaster.show("menu");
     },
     resetWords: function () {
         'use strict';
@@ -208,20 +225,41 @@ var app = {
         app.revisionMode = false;
         app.currentWord = {};
         app.waitingList.init();
-//        app.revisionBox = [];
     },
     loadTest: function () {
         'use strict';
         listAPI.add("test", false);
+	menu.updatePreview(0,false);
+	menu.show();
     },
-    fontTest: function () {
-        'use strict';
-        window.alert("Next Font: " + app.fonts[app.currentFont]);
-        app.currentFont = app.currentFont + 1;
-        if (app.currentFont >= app.fonts.length) {
-            app.currentFont = 0;
-        }
-        document.getElementById("body").style.fontFamily = app.fonts[app.currentFont];
+    incFontSize: function(size) {
+	var elements = document.getElementsByClassName("fontResize"),
+	    i;
+	for (i = 0; i<elements.length; i++) {
+	    app.incFontSizeOne(elements[i],size);
+	}
+    },
+    incFontSizeOne: function(element,size) {
+	if (size === undefined) {
+	    size = element.style.fontSize;
+	}
+	size = parseInt(size);
+	element.style.fontSize=(size + 2) + "px";
+    },
+    decFontSize: function(size) {
+	var elements = document.getElementsByClassName("fontResize"),
+	    i;
+	for (i = 0; i<elements.length; i++) {
+	    app.decFontSizeOne(elements[i],size);
+	}
+    },
+    decFontSizeOne: function(element,size) {
+	if (size === undefined) {
+	    size = element.style.fontSize;
+	}
+	size = parseInt(size);
+
+	element.style.fontSize=(size - 2) + "px";
     },
     waitingList: (function () {
         'use strict';
@@ -287,18 +325,6 @@ var app = {
                     files[word.file][word.dest].push(word);
                 }
             },
-             /*boxToString: function (fileName, boxIndex) {
-                var i,
-                    result,
-                    word;
-                
-                for (i = 0; i < list.length; i += 1) {
-                    word = list[i];
-                    if ((word.file === fileName) && (word.dest === i)) {
-                        result += word.word + app.divider + word.translation + "\n";
-                    }
-                }
-            }*/
         };
     }()),
     boxIsSuitable: function (index) {
@@ -328,7 +354,7 @@ var app = {
             if ((app.currentBox = app.waitingList.pop()) === 6) {
 		//i.e. no word popped
                 window.console.log("No words found");
-                app.activateMenu();
+		ViewMaster.closeCurrent();  //Close the Training
             }
         }
     },
@@ -341,7 +367,7 @@ var app = {
                 // Revision is over
                 app.deactivateRevision();
 		messageBox.show(loc_string.revision_end_caption,loc_string.revision_end_message);
-		window.setTimeout(function(){app.hideUndo();},3);
+		window.setTimeout(function(){trainigView.hideUndo();},3);
 		
                 return true;
             } else {
@@ -351,54 +377,7 @@ var app = {
         // Outside revision mode recently asked words are managed via Waitinglist
         return true;
     },
-    revealAnswer: function () {
-        'use strict';
-	if (app.currentWord.word === undefined) return;
-        var answer;
-        
-        answer = (app.reverse)
-            ? app.currentWord.word
-            : app.currentWord.translation;
-	if (!app.vowels) answer = app.removeVowels(answer);
-        document.getElementById("coverDiv").style.visibility = "hidden";
-        document.getElementById("answer").innerHTML = answer.replace(",", "<br>");
-        document.getElementById("answer").style.color = "#000000";
-        document.getElementById("swipeArea").style.overflow = "visible";
-        app.matchFont("answer");
-        app.swipe.preventScroll = false;
-	app.hideUndo();
-        app.activateButtonCorrect();
-        app.activateButtonWrong();
-    },
-    hideAnswer: function () {
-        'use strict';
-        document.getElementById("answer").innerHTML = "";
-        document.getElementById("swipeArea").style.overflow = "hidden";
-        document.getElementById("cover").innerHTML = "?";
-        app.matchFont("cover");
-        document.getElementById("cover").style.color = "#a0a0a0";
-        document.getElementById("coverDiv").style.visibility = "visible";
-        app.swipe.jumpToPage(2);
-        app.swipe.preventScroll = true;
-        app.deactivateButtonCorrect();
-        app.deactivateButtonWrong();
-    },
-    /* update the displays for the word and its translation (if already revealed)
-     */
-    updateWord: function () {
-        'use strict';
-	if (app.currentWord.word === undefined) return;
-        if (document.getElementById("coverDiv").style.visibility === "hidden") {
-            app.revealAnswer();
-        }
-        var question = (!app.reverse)
-            ? app.currentWord.word
-            : app.currentWord.translation;
-	if (!app.vowels) question = app.removeVowels(question);
-        document.getElementById("question").innerHTML = question;
-        app.matchFont("question");
-            
-    },
+    
     removeVowels: function(word) {
 	'use strict';
 	var i,
@@ -412,30 +391,6 @@ var app = {
 	}
 
 	return back;
-    },
-    activateButtonCorrect: function () {
-        'use strict';
-        document.getElementById("ButtonCorrect").disabled = false;
-        document.getElementById("ButtonCorrect").style.backgroundColor = "";
-        document.getElementById("ImageCorrect").src = "res/tick.png";
-    },
-    deactivateButtonCorrect: function () {
-        'use strict';
-        document.getElementById("ButtonCorrect").disabled = true;
-        document.getElementById("ButtonCorrect").style.backgroundColor = "#a0a0a0";
-        document.getElementById("ImageCorrect").src = "res/tickDeact.png";
-    },
-    activateButtonWrong: function () {
-        'use strict';
-        document.getElementById("ButtonWrong").disabled = false;
-        document.getElementById("ButtonWrong").style.backgroundColor = "";
-        document.getElementById("ImageWrong").src = "res/cross.png";
-    },
-    deactivateButtonWrong: function () {
-        'use strict';
-        document.getElementById("ButtonWrong").disabled = true;
-        document.getElementById("ButtonWrong").style.backgroundColor = "#a0a0a0";
-        document.getElementById("ImageWrong").src = "res/crossDeact.png";
     },
     findNextWord: function () {
         'use strict';
@@ -460,9 +415,9 @@ var app = {
         app.currentWord = box[wordID];
         box.splice(wordID, 1);
 
-        app.hideAnswer();
-        app.updateBoxes();
-        app.updateWord();
+        trainingView.hideAnswer();
+        trainingView.updateBoxes();
+        trainingView.updateWord();
     },
     onRotate: function () {
         'use strict';
@@ -516,7 +471,6 @@ var app = {
 	    app.lastBox = app.currentBox;
         }
 	app.currentWord = {};
-	app.showUndoCorrect();
         app.findNextWord();
     },
     moveWrong: function () {
@@ -534,54 +488,7 @@ var app = {
 	    app.lastBox = app.currentBox;
         }
 	app.currentWord = {};
-	app.showUndoWrong();
         app.findNextWord();
-    },
-    moveSwipe: function () {
-        'use strict';
-        if (app.swipe.page === 2) {
-            app.moveWrong();
-        } else if (app.swipe.page === 0) {
-            app.moveCorrect();
-        }
-    },
-    showUndoWrong: function() {
-	var wrapper = document.getElementById("UndoDiv");
-	wrapper.style.right="auto";
-	wrapper.style.left="0px";
-	wrapper.style.display = "none";
-	wrapper.style.visibility = "visible";
-	window.setTimeout(function(){wrapper.style.display="block"},1);
-    },
-    showUndoCorrect: function () {
-	var wrapper = document.getElementById("UndoDiv");
-	wrapper.style.left="auto";
-	wrapper.style.right="0px";
-	wrapper.style.display = "none";
-	wrapper.style.visibility = "visible";
-	window.setTimeout(function(){wrapper.style.display="block"},1);
-    },
-    hideUndo: function() {
-	document.getElementById("UndoDiv").style.display="none";	
-    },
-    triggerUndo: function() {
-	if (app.revisionMode) {
-	    app.words[5].push(app.currentWord);
-	    app.currentWord = app.words[app.lastBox].pop();
-	} else {
-	    app.words[app.currentBox].push(app.currentWord);
-	    app.currentWord = app.waitingList.undo();
-	    app.currentBox = app.lastBox;
-	    delete app.currentWord.dest;
-	}
-	app.revealAnswer();
-	app.updateWord();
-	app.updateBoxes();
-	app.hideUndo();
-    },
-    activateMenu: function () {
-        'use strict';
-        app.activateView("Menu");
     },
     activateRevision: function () {
         'use strict';
@@ -593,10 +500,10 @@ var app = {
 
 	app.words[5] = app.words[5].concat(app.words[4]);
 	app.words[4] = [];
-	app.updateBoxes();
+	trainigView.updateBoxes();
 
 	messageBox.show(loc_string.revision_start_caption,loc_string.revision_start_message);
-	window.setTimeout(function(){app.hideUndo();},3);
+	window.setTimeout(function(){trainigView.hideUndo();},3);
     },
     reactivateRevision: function () {
         'use strict';
@@ -604,7 +511,7 @@ var app = {
         window.console.log("Reactivating Revision");
 	app.revisionMode = true;
 	app.currentBox = 5; //This is revision
-	app.updateBoxes();
+	trainingView.updateBoxes();
 	messageBox.show(loc_string.revision_restart_caption,loc_string.revision_restart_message);
     },
     deactivateRevision: function () {
@@ -619,41 +526,8 @@ var app = {
             document.getElementById("Box" + i + "Div").style.backgroundColor = "";
         }
 	app.currentBox = 0;
-	app.updateBoxes();
-	app.hideUndo();
-    },
-    showView: function (view) {
-        'use strict';
-
-        var divs = document.getElementsByClassName(view),
-            div;
-        for (div = 0; div < divs.length; div = div + 1) {
-            divs[div].style.visibility = "visible";
-        }
-    },
-    hideView: function (view) {
-        'use strict';
-
-        var divs = document.getElementsByClassName(view),
-            div;
-        for (div = 0; div < divs.length; div = div + 1) {
-            divs[div].style.visibility = "hidden";
-        }
-    },
-    activateView: function (view) {
-        'use strict';
-
-        app.hideView("Training");
-        app.hideView("Menu");
-        app.hideView("edit");
-
-        app.showView(view);
-        app.currentView = view;
-    },
-    activateTraining: function () {
-        'use strict';
-        app.activateView("Training");
-        app.swipe.jumpToPage(2);
+	trainingView.updateBoxes();
+	trainingView.hideUndo();
     },
     revisionReady: function() {
 	var box = app.count();
@@ -679,30 +553,6 @@ var app = {
 
 	return box;
     },
-    updateBoxes: function () {
-        'use strict';
-	var i;
-
-        var box = app.count();
-        for (i = 0; i < 5; i += 1) {
-            document.getElementById("Box" + i).innerHTML = box[i];
-            document.getElementById("Box" + i).style.fontWeight = "normal";
-            document.getElementById("Box" + i + "Div").style.backgroundColor = "";
-            app.matchFont("Box" + i);
-        }
-        if (app.revisionMode) {
-	    document.getElementById("Box" + 1 + "Div").style.backgroundColor = "#a0a0a0";
-	    document.getElementById("Box" + 3 + "Div").style.backgroundColor = "#a0a0a0";
-
-	    //show revision Box in the Middle
-            document.getElementById("Box" + 2).style.fontWeight = "bold";
-            document.getElementById("Box" + 2 + "Div").style.backgroundColor = "#fcff66";
-	    document.getElementById("Box" + 2).innerHTML = box[5];
-        } else {
-            document.getElementById("Box" + app.currentBox).style.fontWeight = "bold";
-            document.getElementById("Box" + app.currentBox + "Div").style.backgroundColor = "#fcff66";
-	}
-    },
     writeBoxes: function () {
         'use strict';
         // write back Waiting List
@@ -713,50 +563,15 @@ var app = {
             app.words[app.currentBox].push(app.currentWord);
 	    app.currentWord = {};
 	}
-
-        //app.words[4] = app.words[4].concat(app.revisionBox);
-        //app.revisionBox = [];
     },
-    /*boxesToString: function (fileName) {
-        'use strict';
-        var i,
-            result = "";
-	//11235
-        for (i = 0; i <= 4; i += 1) {
-            result += app.boxToString(fileName, i);
-            result += "-\n";
-        }
-        result += app.boxToString(fileName,5);
-
-        return result;
-    },
-    boxToString: function (fileName, i) {
-        'use strict';
-
-        var j,
-            word,
-            result = "";
-        for (j = 0; j < app.words[i].length; j += 1) {
-            word = app.words[i][j];
-            if (word.file === fileName) {
-                result += word.word + app.divider + word.translation + "\n";
-            }
-        }
-        result += app.waitingList.boxToString(fileName, i);
-
-	if (app.currentWord.word !== undefined) {
-            word = app.currentWord;
-            if ((app.currentBox === i) && (word.file === fileName)) {
-		result += word.word + app.divider + word.translation + "\n";
-            }
-	}
-
-        return result;
-    },*/
     loadLession: function (fileName) {
         'use strict';
         var processFile = function (boxes) {
             var j;
+	    if ( (boxes[0].length + boxes[1].length + boxes[2].length + boxes[3].length + boxes[5].length) === 0 ) {
+		boxes[5] = boxes[4];
+		boxes[4] = [];
+	    }
             for (j = 0; j < 6; j += 1) {
                 app.words[j] = app.words[j].concat(boxes[j]);
             }
@@ -774,58 +589,19 @@ var app = {
         listAPI.withParsed(fileName, processFile);
         listAPI.touch(fileName);
     },
-    ButtonStart_onClick: function () {
-        'use strict';
-        var i;
-        
-        app.fileNames = listAPI.getSelected();
-        app.resetWords();
-
-        if (app.fileNames.length === 0) {
-	    messageBox.show(loc_string.no_files_selected_caption,loc_string.no_files_selected_message);
-            return;
-        }
-
-	app.revisionMode = true; //assume revision mode, correct, if one of the files cannot be in revision Mode
-	
-        app.processed = 0;
-        for (i = 0; i < app.fileNames.length; i += 1) {
-            app.loadLession(app.fileNames[i]);
-        }
-
-        document.getElementById("LectionID").innerHTML = listAPI.getSelectedToString();
-    },
     startSession: function () {
         'use strict';
 	app.currentWord = {};
-	app.activateTraining();
+	ViewMaster.show("training");
 
 	if (!app.revisionMode) {
 	    app.deactivateRevision();
-	} else if (app.words[5].length === 0) {
+	} else if ( (app.words[5].length === 0) || (app.words[0].length + app.words[1].length + app.words[2].length + app.words[3].length + app.words[4].length === 0)) {
 	    app.activateRevision();
 	} else {
 	    app.reactivateRevision();
 	}
         app.findNextWord();
-    },
-    /* Event handler for the + Button in the List view*/
-    ButtonLoad_onClick: function () {
-        'use strict';
-        window.fileStorage.open(function (uri) {
-            window.listAPI.add(uri, true);
-	    app.updatePreview(0,false);
-        }, function (error) {
-	    if (error !== 0) {
-		window.alert("Error Opening file: " + error);
-	    }
-        });
-            
-        /*    var filePath = uri.filepath,
-                fileName = filePath.substr(filePath.lastIndexOf('/') + 1);
-            listAPI.add(fileName, filePath, true);
-            //app.fileNames = [uri.filepath];
-        });*/
     },
     /* sorts all words from the Boxes, the revision box and the current words into files
      * returns: dictionary with one entry per file name containing a 5+1 Box array each
@@ -875,62 +651,24 @@ var app = {
         //	app.loadingFileIndex = 0;
         //	app.writeNextFile();
     },
-    ButtonCorrect_onClick: function () {
+    backButton_onClick: function (event) {
         'use strict';
-        app.moveCorrect();
+	ViewMaster.closeCurrent();
     },
-    ButtonWrong_onClick: function () {
-        'use strict';
-        app.moveWrong();
-    },
-    ButtonMenu_onClick: function (event) {
-        'use strict';
-        app.writeBoxes();
-        app.store_back();
-        listAPI.show();
-        app.activateMenu();
-        event.stopPropagation();
-    },
-    preview_onClick: function () {
-        'use strict';
-        app.reverse = !app.reverse;
-        localStorage.setItem('reverse',app.reverse);	
-        app.showPreview();
-    },
-    backButton_onClick: function () {
-        'use strict';
-        switch (app.currentView) {
-        case "Training":
-            app.ButtonMenu_onClick();
-            break;
-        case "Menu":
-            navigator.app.exitApp();
-            break;
-        default:
-            window.alert("No back behaviour defined for view " + app.currentView);
-        }
-    },
-    onPause: function () {
-        'use strict';
-        switch (app.currentView) {
-        case "Training":
-            app.ButtonMenu_onClick();
-            break;
-        case "Menu":
-            break;
-        default:
-            window.alert("No pause behaviour defined for view " + app.currentView);
-        }
+    onPause: function (event) {
+	ViewMaster.pause();
     }
 };
 
 messageBox = {
+    shown: false,
     init: function () {
-	messageBox.hide();
+	this.shown = false;
 	document.getElementById("MessageBox").addEventListener("click",messageBox.hide);
     },
     hide: function () {
 	document.getElementById("MessageBox").style.visibility = "hidden";
+	this.shown = false;
     },
     show: function (caption,body) {
 	if (caption !== undefined) {
@@ -940,29 +678,26 @@ messageBox = {
 	    document.getElementById("MessageBody").innerHTML = body;
 	}
 	document.getElementById("MessageBox").style.visibility = "visible";
+	this.shown = true;
     }
-}
+};
 
 editDialog = {
     init: function () {
         'use strict';
-        editDialog.activateLongpress(document.getElementById("questionDiv"));
-        document.getElementById("questionDiv").addEventListener("dblclick", function () {
-            editDialog.show();
-        });
+	editDialog.activateLongpress(document.getElementById("questionDiv"));
     },
     show: function () {
         'use strict';
         var answer;
 
-        app.revealAnswer();
-        app.showView("edit");
+        trainingView.revealAnswer();
+	ViewMaster.show("edit");
         document.getElementById("editQuestionField").style.fontSize = document.getElementById("question").style.fontSize;
         document.getElementById("editAnswerField").style.fontSize = document.getElementById("answer").style.fontSize;
         answer = document.getElementById("answer").innerHTML;
         document.getElementById("editAnswerField").value = answer.replace("<br>", ",");
         document.getElementById("editQuestionField").value = document.getElementById("question").innerHTML;
-        
     },
     save: function () {
         'use strict';
@@ -972,11 +707,13 @@ editDialog = {
 	
         app.currentWord.word = app.reverse ? answer : question;
         app.currentWord.translation = app.reverse ? question : answer;
-        app.updateWord();
+        traningView.updateWord();
 	editDialog.close();
     },
     close: function () {
-	app.hideView("edit");
+	ViewMaster.closeCurrent();
+	app.matchFont("answer");
+	app.matchFont("question");
     },
     longpress: false,
     presstimer: null,

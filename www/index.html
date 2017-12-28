@@ -20,8 +20,9 @@
 
         <link rel="stylesheet" type="text/css" href="css/index.css" />
         <script id="appSource"  type="text/javascript" src="js/index.js"></script>
-        <script id="list" type="text/javascript" src="js/list.js"></script>
-        <script id="dragend" type="text/javascript" src="js/dragend.js"></script>
+        <script id="list"       type="text/javascript" src="js/list.js"></script>
+	<script id="training"   type="text/javascript" src="js/trainingView.js"></script>
+        <script id="dragend"    type="text/javascript" src="js/dragend.js"></script>
         <script id="cordovaLib" type="text/javascript" src="cordova.js" onerror="app.onDeviceReady()")></script>
 
         <title>Vokabel Trainer</title>
@@ -31,7 +32,7 @@
       <div class="app" id="app">
             <!-- Training view -->
             <div id="Lection" class="Training">  
-                <img id="ImageMenu" src="res/menu.png" alt="Menu" onclick="app.ButtonMenu_onClick()" />
+                <img id="ImageMenu" src="res/menu.png" alt="Menu" />
                 Lection: <div id="LectionID"></div>
             </div>
 
@@ -66,7 +67,7 @@
                     </div>
                     <div id="postAnswer" class="dragend-page"> </div>
                 </div>
-                <div id="coverDiv" class="Training" onclick="app.revealAnswer()">
+                <div id="coverDiv" class="Training" onclick="trainingView.revealAnswer()">
                     <div id="coverContainer">
                         <div id="cover">
                         </div>
@@ -74,7 +75,7 @@
                 </div>
             </div>
 
-	    <div id="UndoDiv" data-anim="base" onclick="app.triggerUndo()">
+	    <div id="UndoDiv" data-anim="base" onclick="trainingView.triggerUndo()">
 	      <div id="UndoBackground">
 		<img id="UndoIcon" src="res/undo.png" alt="undo" />
 	      </div>
@@ -83,12 +84,12 @@
 		<div id="UndoCircleR" data-anim="base"></div>
 	      </div>
 	    </div>
-            <button id="ButtonCorrect" class="Training" onclick="app.ButtonCorrect_onClick()">
+            <button id="ButtonCorrect" class="Training" onclick="trainingView.ButtonCorrect_onClick()">
                 <div id="ContainerCorrect" class="centerContainer">
                     <img id="ImageCorrect" class="centerElement" src="res/tick.png" alt="Correct"/>
                 </div>
             </button>
-            <button id="ButtonWrong"   class="Training" onclick="app.ButtonWrong_onClick()"  >
+            <button id="ButtonWrong"   class="Training" onclick="trainingView.ButtonWrong_onClick()"  >
                 <div id="ContainerWrong" class="centerContainer">
                     <img id="ImageWrong" class="centerElement" src="res/cross.png" alt="Wrong"/>
                 </div>
@@ -100,12 +101,12 @@
 	    </div>
             <div id="FileList" class="Menu">
 	      
-              <div id="listRecent" class="List Menu">
+              <div id="listRecent" class="List Menu fontResize">
               </div>
 	    </div>
 	      
 	    
-            <div id="preview" class="Menu" onclick="app.preview_onClick()">
+            <div id="preview" class="Menu" onclick="menu.preview_onClick()">
 	      <div id="questionDiv">
                 <div id="questionContainer">
                   <div id="prev_question">
@@ -129,29 +130,29 @@
               </div>
               <img id="ImageSwitch" src="res/switch.png"/>
 	      <div id="NumWords">
-		35
+		
 	      </div>
             </div>
 
 	    <div id="BottomBar" class="Menu">
 	      <div id="ContainerInputSearch" class="Menu">
-		<input type="text" id="InputSearch" onkeyup="listAPI.InputSearch_onKeyUp()"/>
+		<input type="text" id="InputSearch"/>
 	      </div>
 	      
 	      <div id="Toolkit">
 		<div style="flex-grow: 1;"></div>
-		<img src="res/a2z.png" id="ButtonSort" class="ToolButton" onclick="listAPI.ButtonSort_onClick()" />
-		<img src="res/vowels.png" id="ButtonVowel" class="ToolButton" onclick="listAPI.ButtonVowel_onClick()" />
-		<img src="res/search.png" id="ButtonSearch" class="ToolButton" onclick="listAPI.ButtonSearch_onClick()" />
+		<img src="res/a2z.png" id="ButtonSort" class="ToolButton" />
+		<img src="res/vowels.png" id="ButtonVowel" class="ToolButton" />
+		<img src="res/search.png" id="ButtonSearch" class="ToolButton" />
 		<div style="flex-grow: 1;""></div>
 	      </div>
 	      
-              <button id="ButtonLoad"  class="Menu CircularButton" onclick="app.ButtonLoad_onClick()" >
+              <button id="ButtonLoad"  class="Menu CircularButton" onclick="menu.ButtonLoad_onClick()" >
                 <div id="ContainerLoad" class="centerContainer">
                   <img id="ImageLoad" class="centerElement" src="res/plus.png" alt="Add File"/>
                 </div>
               </button>
-              <button id="ButtonStart" class="Menu CircularButton" onclick="app.ButtonStart_onClick()" >
+              <button id="ButtonStart" class="Menu CircularButton" onclick="menu.ButtonStart_onClick()" >
                 <div id="ContainerStart" class="centerContainer">
                   <img id="ImageStart" class="centerElement" src="res/arrow.png" alt="Start"/>
                 </div>
@@ -161,6 +162,13 @@
             
             <!-- Details View -->
             <div id="dialogVeil" class="Details">
+	      <div id="detailsNext" class="Details" onclick="dialog.showNext(event)">
+		&gt;&gt;
+	      </div>
+	      <div id="detailsPrev" class="Details" onclick="dialog.showPrev(event)">
+		&lt;&lt;
+	      </div>
+	      
                 <div id="dialog" class="Details">
                     <div id="dialogHeader"></div>
                     <div id="dialogBackground"></div>
@@ -208,7 +216,7 @@
 			</div>
 		      </div>
                     </div>
-		    <div id="ListContent" class="Details DialogTab">
+		    <div id="ListContent" class="Details DialogTab fontResize">
 		      <table id="dialogListDiv">
 			
 		      </table>
@@ -236,7 +244,7 @@
             </div>
       </div>
       <!-- MessageBox -->
-      <div id="MessageBox">
+      <div id="MessageBox" class="MessageBox">
 	<div id="Message">
 	  <div id="MessageCaption">
 	    Hallo Welt!
