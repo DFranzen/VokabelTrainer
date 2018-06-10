@@ -11,6 +11,7 @@
 html {
     width:100%;
     height:100%;
+    overflow: hidden;
 }
 body {
     -webkit-touch-callout: none;  /* prevent callout to copy image, etc when tap to hold */
@@ -23,6 +24,7 @@ body {
     padding:0px;
     width:100%;
     height:100%;
+    position: relative;
     --color-header:    #FFA500;
     --color-cardfront: #FCFF66;
     --color-cardback:  #EFEF20;
@@ -36,6 +38,7 @@ body {
     --color-background-dark:   #bcbcbc;
     --color-selected-dark:     #002d77;
     --color-selected-bright:   #0043af;
+    overflow: hidden;
 }
 
 button {
@@ -47,8 +50,10 @@ button {
 .app {
     height:auto;
     bottom: 0em;
-    width:100%; 
+    width:100%;
+    height: 100%;
     text-align:center;
+    overflow: hidden;
 }
 
 /* Landscape layout (with min-width) */
@@ -59,12 +64,10 @@ button {
 }
 
 .greyedOut {
-   /*background-color: rgba(84,84,84,0.8);*/
-    -webkit-animation: 2000ms greyedOut;
-            animation: 2000ms greyedOut;
+    animation: 2000ms greyedOut;
 }
 
-@-webkit-keyframes greyedOut {
+@keyframes greyedOut {
     100% { background-color: rgba(84,84,84,0.8); }
 }
 
@@ -227,6 +230,7 @@ button {
 
 #SaveCaption {
     font-size:175%;
+    width:100%;
 }
 
 #CancelCaption {
@@ -236,30 +240,48 @@ button {
 
 #ButtonCorrect {
     position:absolute;
-    top: 60%;
+    top: 50%;
     left: 85%;
-    height: 30%;
-    width: 15%;
+    height: 45%;
+    width: 30%;
 
     background-color: green;
-    border-top-left-radius: 40%;
-    border-bottom-left-radius: 40%;
+    border-top-left-radius: 50%;
+    border-bottom-left-radius: 50%;
     font-size:400%;
+    border: none;
 }
 
 #ButtonWrong {
     position:absolute;
-    top: 60%;
-    left: 0%;
-    height: 30%;
-    width: 15%;
+    top: 50%;
+    right: 85%;
+    height: 45%;
+    width: 30%;
     font-size:400%;
 
     background-color: red;
-    border-top-right-radius: 40%;
-    border-bottom-right-radius: 40%;
-
+    border-top-right-radius: 50%;
+    border-bottom-right-radius: 50%;
+    border:none;
 }
+
+#ButtonWrong.ButtonDisabled {
+    background: radial-gradient(ellipse at center, rgba(188,188,188,1) 0%, rgba(188,188,188,0.2) 100%);
+}
+
+#ButtonWrong.ButtonEnabled {
+    background: radial-gradient(ellipse at center, rgba(224,0,0,1) 0%, rgba(224,0,0,0.2) 100%);
+}
+
+#ButtonCorrect.ButtonDisabled {
+    background: radial-gradient(ellipse at center, rgba(188,188,188,1) 0%, rgba(188,188,188,0.2) 100%);
+}
+
+#ButtonCorrect.ButtonEnabled {
+    background: radial-gradient(ellipse at center, rgba(0,128,0,1) 0%, rgba(0,128,0,0.2) 100%);
+}
+
 
 .centerContainer {
     width: 100%;
@@ -274,16 +296,25 @@ button {
 }    
 
 #ImageCorrect {
-    width: 60%;
+    width: 40%;
     margin-left: auto;
     margin-right:0;
 }
 
 #ImageWrong {
-    width:60%;
+    width:40%;
     margin-right: auto;
     margin-left: 0;
 }
+
+#ContainerWrong {
+    transform: translateX(50%);
+}
+
+#ContainerCorrect {
+    transform: translateX(-50%);
+}
+
 
 #ImageMenu
 {
@@ -458,7 +489,7 @@ button {
     height:100%;
 }
 
-#listRecent
+#listRecent, #listSearch
 {
     position:absolute;
     top:0%;
@@ -470,6 +501,11 @@ button {
     padding-bottom: 10em;
 }
 
+#listSearch
+{
+    visibility: hidden;
+}
+
 .listElement
 {
     width:100%;
@@ -479,6 +515,57 @@ button {
     box-sizing: border-box;
     position:relative;
     background: #E4E4E4;
+}
+
+.resultContainer
+{
+    width:100%;
+    text-align: left;
+    padding: 0.4em 0.5em;
+    box-sizing: border-box;
+    position:relative;
+    background: #E4E4E4;
+    white-space: nowrap;
+}
+
+#listSearch > * {
+    font-size: 200%;
+}
+
+.resultLine {
+    line-height: 120%;
+}
+
+.resultWord {
+    padding-right: 1em;
+}
+
+.SearchCaption {
+    /* border-top: 2px black solid; */
+    /* transform: translateY(0.5em); */
+    display: inline-block;
+    /* white-space: nowrap; */
+    font-size: 90%;
+    color: var(--color-background-dark);
+    width: 100%;
+    overflow: hidden;
+}
+
+.SearchCaption hr {
+    display: inline-block;
+    width: 75%;
+    clear: right;
+    /* margin-top: 0.7em; */
+    font-size: 10%;
+    border-color: var(--color-background-dark);
+    border-top: 0;
+    margin-left: 5%;
+}
+
+.SearchCaption hr:first-child {
+    width: 15%;
+    margin-right: 5%;
+    margin-left: 0;
 }
 
 .listElementEven
@@ -620,18 +707,18 @@ button {
     to { opacity: 1.0; }
 }
  
-@-webkit-keyframes fade {
+@keyframes fade {
     from { opacity: 1.0; }
     50% { opacity: 0.4; }
     to { opacity: 1.0; }
 }
 
 .longpress {
-    -webkit-animation: 1s longpress;
+    animation: 1s longpress;
             animation: 1s longpress;
 }
 
-@-webkit-keyframes longpress {
+@keyframes longpress {
     100% { background: #4c4c4c; }
 }
 
@@ -841,10 +928,29 @@ button {
     width: 100%;
     border-radius: 0.3em;
     border-style: solid;
-    border-witdh: 5px;
     border-color: black;
     box-sizing: border-box;
     background-color: #FCFF66;
+}
+
+#listSearch > span {
+    display: block;
+}
+
+.btn_searchOnline
+{
+    height: 2em;
+    line-height: 2em;
+    text-align: center;
+    font-size: 200%;
+    width: 100%;
+    border-radius: 0.3em;
+    border-style: solid;
+    border-color: black;
+    box-sizing: border-box;
+    margin-top: 2em;
+    margin-bottom: 2em;
+    background-color: var(--color-background-dark);
 }
 
 #OptionContent {
@@ -922,19 +1028,23 @@ div#Message {
 }
 
 #UndoDiv {
-  width: 12vw; /* Set the size of the progress bar */
-  height: 12vw;
+  width: 12%; /* Set the size of the progress bar */
   position: absolute; /* Enable clipping */
   left: 0;
-  bottom: 40%;
+  bottom: 50%;
   display: block;
   opacity: 0.5;
-  visibility:hidden;
   overflow: hidden;
 
-  -webkit-animation-duration: 0.01s;
-  -webkit-animation-delay: 2s;
-  -webkit-animation-name: remove;
+  animation-duration: 0.01s;
+  animation-delay: 2s;
+  animation-name: remove;
+}
+
+#UndoDiv:after{
+    content: "";
+    padding-bottom: 100%;
+    display: block;
 }
 
 #UndoIcon {
@@ -965,12 +1075,82 @@ div#Message {
   clip-path: none;
   top:0;
   left:0;
-  overflow:hidden;
-  -webkit-animation-duration: 0.01s; /* Complete keyframes asap */
-  -webkit-animation-delay: 1s; 
-  -webkit-animation-name: close-wrapper;
-
+  animation-duration: 0.01s; /* Complete keyframes asap */
+  animation-delay: 1s; 
+  animation-name: close-wrapper;
+  overflow: hidden;
+  box-sizing: border-box;
 }
+
+#UndoCircleLContainer {
+    width: 50%;
+    height: 100%;
+    position: absolute;
+    top:0;
+    left: 0;
+    overflow: hidden;
+}
+
+#UndoCircleRContainer {
+    width: 50%;
+    height: 100%;
+    position: absolute;
+    top:0;
+    right: 0;
+    overflow: hidden;
+}
+
+#UndoCircleLDContainer {
+    width: 50%;
+    height: 50%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+}
+
+#UndoCircleRUContainer {
+    width: 50%;
+    height: 50%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    overflow: hidden;
+}
+
+#UndoCircleRU {
+    width: 200%;
+    height: 200%;
+    right: 0;
+    top: 0;
+    border: 4px solid rgba(68,68,68,1);
+    border-radius: 50%;
+    position: absolute;
+    box-sizing:border-box;
+    overflow: visible;
+    
+    animation-duration: 0.01s;
+    animation-delay: 1.5s;
+    animation-name: remove;
+}
+
+#UndoCircleLD {
+    width: 200%;
+    height: 200%;
+    left: 0;
+    bottom:0;
+    border: 4px solid rgba(68,68,68,1);
+    border-radius: 50%;
+    position: absolute;
+    box-sizing:border-box;
+    overflow: visible;
+    
+    animation-duration: 0.01s;
+    animation-delay: 0.5s;
+    animation-name: remove;
+}   
+
+
 
 /* Set the sizes of the elements that make up the progress bar */
 #UndoCircleL {
@@ -979,55 +1159,88 @@ div#Message {
     border: 4px solid rgba(68,68,68,1);
     border-radius: 50%;
     position: absolute;
-    box-sizing:border-box;
-    clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+    box-sizing: border-box;
+    clip-path: inset(-10% 50% -10% -10%);
+    overflow: visible;
     
-    -webkit-animation-duration: 2s; /* Full animation time */
-    -webkit-animation-name: left-spin;
+    animation-duration: 2s; /* Full animation time */
+    animation-name: left-spin;
+    transform: rotate(360deg);
 }
 
 #UndoCircleR {
-    width: 100%;
+    width: 200%;
     height: 100%;
+    right: 0;
     border: 4px solid rgba(68,68,68,1);
     border-radius: 50%;
     position: absolute;
     box-sizing:border-box;
-    clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
+    overflow: visible;
     
-    -webkit-animation-duration: 0.01s;
-    -webkit-animation-delay: 1s;
-    -webkit-animation-name: remove;
+    animation-duration: 0.01s;
+    animation-delay: 1s;
+    animation-name: remove;
 }   
 
 /* Base settings for all animated elements */
 div[data-anim~=base] {
-  -webkit-animation-iteration-count: 1;  /* Only run once */
-  -webkit-animation-fill-mode: forwards; /* Hold the last keyframe */
-  -webkit-animation-timing-function:linear; /* Linear animation */
+  animation-iteration-count: 1;  /* Only run once */
+  animation-fill-mode: forwards; /* Hold the last keyframe */
+  animation-timing-function:linear; /* Linear animation */
 }
 
 /* Rotate the left side of the progress bar from 0 to 360 degrees */
-@-webkit-keyframes left-spin {
+@keyframes left-spin {
     from {
-	-webkit-transform: rotate(360deg);
+	transform: rotate(360deg);
     }
     to {
-	-webkit-transform: rotate(0deg);
+	transform: rotate(0deg);
     }
 }
-@-webkit-keyframes close-wrapper {
+@keyframes close-wrapper {
     to {
 	clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
     }
 }
 
-@-webkit-keyframes remove {
+@keyframes remove {
     to {
 	visibility: hidden;
     }
 }
 
+@keyframes removeDebug {
+    to {
+	opacity: 0.1;
+    }
+}
+
+
 .fontResize {
     font-size: 100%;
+}
+
+#WelcomeVeil {
+   border-radius: 50%;
+   position: absolute;
+   z-index: 99999;
+   width: 4em;
+   height: 4em;
+   top: 0;
+   left: 0;
+   box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+}
+
+#WelcomeBackground {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.FirstUse {
+    visibility: hidden;
 }

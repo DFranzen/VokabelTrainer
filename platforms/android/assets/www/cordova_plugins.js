@@ -233,7 +233,8 @@ module.exports.metadata =
     "cordova-plugin-document-contract": "0.4.1",
     "cordova-plugin-file": "4.3.3",
     "cordova-custom-config": "4.0.2",
-    "com.manueldeveloper.volume-buttons": "0.0.3"
+    "com.manueldeveloper.volume-buttons": "0.0.3",
+    "cordova-plugin-whitelist": "1.2.2"
 };
 // BOTTOM OF METADATA
 });

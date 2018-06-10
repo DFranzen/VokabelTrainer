@@ -1,19 +1,51 @@
-var app;
-var FileReader;
-var listAPI;
-var dialog;
-var menu;
+function httpGet(theUrl, onSuccess)
+{
+    if (window.XMLHttpRequest)
+    {// code for IE7+, Firefox, Chrome, Opera, Safari
+        xmlhttp=new XMLHttpRequest();
+    }
+    else
+    {// code for IE6, IE5
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange=function()
+    {
+        if (xmlhttp.readyState==4 && xmlhttp.status==200)
+        {
+	    onSuccess(xmlhttp.responseText);
+        }
+    }
+    xmlhttp.open("GET", theUrl, false );
+    xmlhttp.send();    
+}
+
+var app,
+    FileReader,
+    listAPI,
+    dialog,
+    menu,
+    loc_string=window.loc_string;
 
 menu = {
     preview: {},
     previewCount: 0,
     count:0,
     sort: "",
+    sortModes: ["recent", "tencer", "alphanum", "munahpla",  "progress", "ssergorp"],
+    sortIcons: ["res/recent.png", "res/tencer.png", "res/a2z.png", "res/z2a.png", "res/progress.png", "res/ssergrop.png"],
+
     init: function() {
     	document.getElementById("InputSearch"). addEventListener("keyup",menu.InputSearch_onKeyUp);
 	document.getElementById("ButtonSearch").addEventListener("click",menu.ButtonSearch_onClick);
 	document.getElementById("ButtonVowel"). addEventListener("click",menu.ButtonVowel_onClick);
 	document.getElementById("ButtonSort").  addEventListener("click",menu.ButtonSort_onClick);
+
+	document.getElementById("MenuCaption").innerHTML = window.loc_string.file_list_caption;
+
+	document.getElementById("listSearch").innerHTML = "<span>" + window.loc_string.search_init + "</span>";
+
+	
+	//httpGet("http://eg.lisaanmasry.com/online/search.php?ui=en&language=EN&key=test&action=s");
     },
     show: function () {
         'use strict';
@@ -31,11 +63,11 @@ menu = {
         'use strict';
         window.fileStorage.open(function (uri) {
             window.listAPI.add(uri, true);
-	    menu.updatePreview(0,false);
-	    menu.show();
-        }, function (error) {
+	    window.menu.updatePreview(0,false);
+	    window.menu.show();
+	}, function (error) {
 	    if (error !== 0) {
-		window.alert("Error Opening file: " + error);
+		window.alert(window.loc_string.error_opening_file + error);
 	    }
         });
             
@@ -81,12 +113,202 @@ menu = {
     },
     InputSearch_onKeyUp: function() {
 	window.console.log("Keyup on searchbar");
-	menu.show();
+	menu.updateResults();
+	//menu.show();
     },
     /* updates the Preview window after an entry in the list has been toggled
      * id: id of the toggled list entry
      * toggled: true if toggled to on, false if toggled to off
      */
+    updateResults: function() {
+	var listSearch = document.getElementById("listSearch"),
+	    inputSearch = document.getElementById("InputSearch"),
+	    searchOnline = document.createElement("button"),
+	    searchOnlineResults = document.createElement("div"),
+	    searchTerm = inputSearch.value;
+	
+	listSearch.innerHTML = "";
+
+	if (searchTerm !== "") {
+	    listAPI.elements.forEach(function(element,id) {
+		container = menu.renderResult(searchTerm,element);
+		if (container) {
+		    listSearch.appendChild(container);
+		}
+	    });
+	    if ( listSearch.innerHTML === "" ) {
+		listSearch.innerHTML = "<span>" + window.loc_string.search_empty + "</span>";
+	    }
+	} else {
+	    listSearch.innerHTML = "<span>" + window.loc_string.search_init + "</span>";
+	}
+	searchOnline.classList.add("btn_searchOnline");
+	searchOnline.type = "button";
+	searchOnline.innerHTML = window.loc_string.search_online_caption;
+	searchOnline.addEventListener("click",function(){
+	    searchOnlineResults.innerHTML = "";
+	    menu.getLM(searchTerm,"Egyptian Arabic");
+	    menu.getLM(searchTerm,"Modern Standard Arabic");
+	});
+	
+	searchOnlineResults.id = "resultsOnline";
+
+	listSearch.appendChild(searchOnlineResults);
+	listSearch.appendChild(searchOnline);
+	
+    },
+    extractLMenglish: function(toprows) {
+	var results = [],
+	    i;
+	window.alert("extracting english");
+	for ( i = 0; i < toprows.length; i++ ) {
+	    prs = toprows[i].getElementsByClassName("pr");
+	    if (prs.length > 0) {
+		results.push(prs[0].innerHTML);
+	    }
+	}
+	return results;
+
+	trs = domLM.getElementsByClassName("searchword")[0].getElementsByTagName("tr");
+	//if (trs[i].contains("trhead")) -> Might contain english
+	toprows=trs[i].getElementsByClassName("toprow"); // if Fail -> continue
+	word = toprows[j].getElementsByClassName("pr")[0].innerHTML;
+    },
+    extractLMarabic: function(toprows) {
+	var results = [],
+	    i;
+	window.alert("extracting arabic");
+	for ( i = 0; i < toprows.length; i++ ) {
+	    try {
+		if (toprows[i].parent.children[2].children[0].children[0].innerHTML !== "EG") continue;
+		word = toprows[i].children[0].children[0];
+		if ( (word.children.length === 0)
+		     && (word.innerHTML.length > 0) ) {
+		    results.push(word.innerHTML);
+		}
+		
+	    } catch (err) {
+		window.alert("Could not extract word");
+	    }
+	}
+	return results;
+    },
+    extractLM: function(trs, language) {
+	var i, j,
+	    results = [],
+	    tr, spans, span, toprows, toprow,
+	    word, translation;
+	for ( i = 0; i < trs.length; i++) {
+	    tr = trs[i];
+	    if (tr.classList.contains("trhead") ) {
+		// Candidate for English
+		toprows=trs[i].getElementsByClassName("toprow");
+		// go through all toprows and look for pr
+		for ( j = 0; j < toprows.length; j++) {
+		    toprow = toprows[j];
+		    prs = toprow.getElementsByClassName("pr");
+		    if ( prs.length > 0 ) {
+			word = prs[0].innerHTML;
+		    }
+		}
+	    } else if ( tr.classList.contains("trodd") ) {
+		// Candidate for arabic
+		spans = tr.getElementsByTagName("span");
+		for ( j = 0; j < spans.length; j++ ) {
+		    span = spans[j];
+		    if ( span.title === language ) {
+			translation = tr.getElementsByClassName("toprow")[0].children[0].children[0].innerHTML;
+			//strip all <...> from translation and word
+			results.push({word: word , translation: translation});
+		    }
+		}
+	    }
+	}
+	return results;
+    }, 
+    getLM: function(searchTerm, language) {
+	var ne = document.createElement("div"),
+	    resultContainer = document.createElement("div");
+	
+	ne.innerHTML = "<hr>" + "lisaanmasry (" + language + ")<hr>";
+	ne.classList.add("SearchCaption");
+	resultContainer.classList.add("resultContainer");
+	resultContainer.id = "results" + language.substr(0,2);
+	resultContainer.appendChild(ne);
+	document.getElementById("resultsOnline").appendChild(resultContainer);
+	
+	var parseLM = function(innerHTML) {
+	    var domLM = document.createElement("html"),
+		results = {},
+		i, trs,
+		ne, resultContainer = document.createElement("div"),
+		resultTable;
+
+	    domLM.innerHTML = innerHTML;
+
+	    trs = domLM.getElementsByClassName("searchword")[0].getElementsByTagName("tr");    
+	    results = menu.extractLM(trs, language);
+
+	    resultTable = document.createElement("table")
+	    resultContainer.appendChild(resultTable);
+	    
+	    for (i = 0; i < results.length; i++) {
+		ne = document.createElement("tr");
+		ne.classList.add("resultLine");
+
+		ne.appendChild(document.createElement("td"));
+		ne.children[0].classList.add("resultWord");
+		ne.children[0].innerHTML = results[i].word;
+		
+		ne.appendChild(document.createElement("td"));
+		ne.children[1].classList.add("resultTranslation");
+		ne.children[1].innerHTML = results[i].translation;
+		
+		resultTable.appendChild(ne);
+	    }
+
+	    document.getElementById("results" + language.substr(0,2)).appendChild(resultContainer);
+	};
+	
+	httpGet("http://eg.lisaanmasry.com/online/search.php?language=EN&key=" + searchTerm + "&action=s", parseLM)
+    },
+    renderResult: function(searchTerm, element) {
+	var resultContainer,
+	    resultTable,
+	    ne,i;
+
+	listAPI.withParsed(element.value, function(boxes) {
+	    finds = listAPI.findInOne(boxes,searchTerm); 
+	    if (finds.length > 0) {
+		ne = document.createElement("div");
+		ne.innerHTML = "<hr>" + element.caption + "<hr>";
+		ne.classList.add("SearchCaption");
+		resultContainer = document.createElement("div"),
+		resultContainer.classList.add("resultContainer");
+		resultContainer.appendChild(ne);
+		resultTable = document.createElement("table")
+		resultContainer.appendChild(resultTable);
+		for ( i = 0; i < finds.length; i++ ) {
+		    ne = document.createElement("tr");
+		    ne.classList.add("resultLine");
+
+		    ne.appendChild(document.createElement("td"));
+		    ne.children[0].classList.add("resultWord");
+		    ne.children[0].innerHTML = finds[i].word;
+		    
+		    ne.appendChild(document.createElement("td"));
+		    ne.children[1].classList.add("resultTranslation");
+		    ne.children[1].innerHTML = finds[i].translation;
+		    
+		    resultTable.appendChild(ne);
+		}
+	    }
+	});
+
+	
+
+	return resultContainer;
+    },
     updatePreview: function (id, toggled) {
         'use strict';
         var showID;
@@ -152,11 +374,21 @@ menu = {
 	}
     },
     toggleSearch: function() {
-	var inputSearch = document.getElementById("InputSearch");
+	var inputSearch = document.getElementById("InputSearch"),
+	    listSearch = document.getElementById("listSearch"),
+	    listFile = document.getElementById("listRecent"),
+	    preview = document.getElementById("preview");
+	
 	if (inputSearch.style.visibility === "inherit") {
 	    inputSearch.style.visibility = "hidden";
+	    listSearch.style.visibility = "hidden";
+	    listFile.style.visibility = "inherit";
+	    preview.style.visibility = "inherit";
 	} else {
 	    inputSearch.style.visibility = "inherit";
+	    listSearch.style.visibility = "inherit";
+	    listFile.style.visibility = "hidden";
+	    preview.style.visibility = "hidden";
 	    inputSearch.select();
 	}
     },
@@ -231,52 +463,64 @@ menu = {
 		    (list.children[childid].children[2].innerHTML.toLowerCase() < element.caption.toLowerCase()) ) {
 		childid ++
 	    }
-	} else if (menu.sort ==="munahpla") {
+	} else if (menu.sort === "munahpla") {
 	    childid = 0;
 	    while ( (childid < list.children.length) &&
 		    (list.children[childid].children[2].innerHTML >= element.caption) ) {
 		childid ++
 	    }
+	} else if (menu.sort === "tencer") {
+	    childid = 0;
 	}
 	
 	if ( childid < list.children.length ) {
 	    list.insertBefore(listElement,list.children[childid]);
 	} else {
+	    //either recent or will be done in showProgress
 	    list.appendChild(listElement);
 	}
 
         listAPI.withParsed(element.value, function (boxes) {
             menu.showProgress(boxes, status, statusPercent);
         });
-	
-	listAPI.withParsed(element.value, function(boxes) {
+
+	//update searching: old code, moved to updateResult
+	/*listAPI.withParsed(element.value, function(boxes) {
 	    var inputSearch = document.getElementById("InputSearch");
 	    var searchTerm = inputSearch.value;
 	    if (inputSearch.value !== "") {
-		if (!listAPI.findInOne(boxes,searchTerm)) {
+		finds = listAPI.findInOne(boxes,searchTerm); 
+		if (finds.length > 0) {
 		    listElement.classList.add("listElementDisabled");
 		}
 	    }
-	});
+	});*/
     },
 
     showSortButton: function() {
-	if (menu.sort === "alphanum") {
-	    document.getElementById("ButtonSort").src="res/a2z.png";
-	} else if (menu.sort === "munahpla") {
-	    document.getElementById("ButtonSort").src="res/z2a.png";
-	} else {
-	    document.getElementById("ButtonSort").src="res/recent.png";
+	var i;
+	for ( i = 0; i < menu.sortModes.length; i++ ) {
+	    if ( menu.sort === menu.sortModes[i] ) {
+		document.getElementById("ButtonSort").src = menu.sortIcons[i];
+		break;
+	    }
 	}
     },
     toggleSort: function() {
-	if (menu.sort === "alphanum") {
-	    menu.sort = "munahpla";
-	} else if (menu.sort === "munahpla") {
-	    menu.sort = "recent";
-	} else {
-	    menu.sort = "alphanum";
+	var i;
+	console.log("changing sort");
+	for ( i = 0; i < menu.sortModes.length; i++ ) {
+	    if ( menu.sort === menu.sortModes[i] ) {
+		break;
+	    }
 	}
+	
+	if ( i >= menu.sortModes.length - 1 ) {
+	    menu.sort = menu.sortModes[ 0 ];
+	} else {
+	    menu.sort = menu.sortModes[ i + 1 ];
+	}
+	console.log("new Sort by: " + menu.sort);
 	menu.show();
     },
     toggleVowel: function() {
@@ -294,8 +538,10 @@ menu = {
         var color = ["#e0a8a8", "#e0c4a8", "#e0dfa8", "#cde0a8", "#b7e0a8", "#b7e0a8"],
             div,
             i,
-            progress = 0,
-            total = 0;
+            progress = 0, pr = 0,
+            total = 0,
+	    childid = 0,
+	    list = document.getElementById("listRecent");
 
         for (i = 0; i <= 5; i += 1) {
             div = document.createElement("div");
@@ -312,6 +558,42 @@ menu = {
 	if (total !== 0) {
             percentNode.innerHTML = Math.floor(progress / total) + "%";
 	    percentNode.classList.remove("listStatusPercentWarn");
+
+	    if ( percentNode.parentNode.parentNode !== list ) return;
+	    
+	    if ( (menu.sort === "progress") ) {
+		while (childid < list.children.length) {
+		    if (list.children[childid].children[1].innerHTML === "") {
+			break;
+		    }
+		    pr = list.children[childid].children[1].innerHTML;
+		    pr = pr.substr(0,pr.length-1);
+		    if (pr >= Math.floor(progress / total)) {
+			break;
+		    }
+		    childid ++;
+		}
+		list.insertBefore(percentNode.parentNode, list.children[childid]);
+		
+	    }
+
+	    if ( (menu.sort === "ssergorp") ) {
+		while (childid < list.children.length) {
+		    if (list.children[childid].children[1].innerHTML === "") {
+			break;
+		    }
+		    pr = list.children[childid].children[1].innerHTML;
+		    pr = pr.substr(0,pr.length-1);
+		    if (pr < Math.floor(progress / total)) {
+			break;
+		    }
+		    childid ++;
+		}
+		list.insertBefore(percentNode.parentNode, list.children[childid]);
+		
+	    }
+	    
+
 	} else {
 	    percentNode.innerHTML = "!";
 	    percentNode.classList.add("listStatusPercentWarn");
@@ -394,11 +676,11 @@ listAPI = {
         var d,
             id = this.getId(element);
         if (id < 0) {
-            return "Not available";
+            return window.loc_string.not_available;
         }
 
         if (this.elements[id].added === undefined) {
-            return "Not available";
+            return window.loc_string.not_available;
         }
         d = new Date(this.elements[id].added);
         return d.toLocaleDateString() + " " + d.toLocaleTimeString();
@@ -409,11 +691,11 @@ listAPI = {
         var d,
             id = this.getId(element);
         if (id < 0) {
-            return "Not available";
+            return window.loc_string.not_available;
         }
 
         if (this.elements[id].used === undefined) {
-            return "Not available";
+            return window.loc_string.not_available;
         }
         d = new Date(this.elements[id].used);
         return d.toLocaleDateString() + " " + d.toLocaleTimeString();
@@ -471,7 +753,7 @@ listAPI = {
 
 	for (i = 0; i<lines.length; i += 1) {
 	    word = lines[i];
-	    //window.alert("searching in " + word);
+
 	    letters = [];
 	    if ( (word.length <=2) ) continue;
 	    for (j = 0; j<word.length; j += 1) {
@@ -488,7 +770,7 @@ listAPI = {
 	    }
 	    length = 0;
 	    for (var cand in candidates) {
-		//window.alert("considering " + JSON.stringify(cand));
+
 		if (candidates.hasOwnProperty(cand)) {
 		    if (letters.hasOwnProperty(cand)) {
 			length += 1;
@@ -643,7 +925,7 @@ listAPI = {
 		    listAPI.data[fileName] = "";
 		    ready("");
 		} else {
-                    window.alert("Error while reading file: " + error);
+                    window.alert(loc_string.error_while_reading_file + error);
 		}
             }, fileName);
         }
@@ -701,7 +983,7 @@ listAPI = {
         }
 
         window.fileStorage.writeToUri(function () {}, function (error) {
-	    window.alert("Error while writing to file, Progress might get lost");
+	    window.alert(loc_string.error_while_writing_file);
 	}, fileName, data);
     },
     getId: function (element) {
@@ -739,6 +1021,7 @@ listAPI = {
 	add_helper = function(name) {
 	    listAPI.elements.unshift({caption: name, value: uri, selected: selected, added: added, used: used});
 	    localStorage.setItem("recentFiles", JSON.stringify(listAPI.elements));
+	    window.menu.show();
 	}
 
 	
@@ -749,7 +1032,7 @@ listAPI = {
 		add_helper,
 		function(err) {
 		    var caption=listAPI.getFileName(uri);
-		    window.alert("Error accessing FileName: " + caption);
+		    window.alert(loc_string.error_accessing_filename + caption);
 		    add_helper(caption);
 		},
 		uri
@@ -806,19 +1089,18 @@ listAPI = {
     findInOne: function(boxes,searchTerm) {
 	var i,j, word, tans;
 	searchTerm = app.removeVowels(searchTerm.toLowerCase());
+	result = [];
 	for (i=0;i<boxes.length;i++) {
 	    for (j=0;j<boxes[i].length;j++) {
 		word = app.removeVowels(boxes[i][j].word.toLowerCase());
 		trans = app.removeVowels(boxes[i][j].translation.toLowerCase());
-		if (word.indexOf(searchTerm) != -1) {
-		    return true;
-		}
-		if (trans.indexOf(searchTerm) != -1) {
-		    return true;
+		if  ( (word.indexOf(searchTerm) != -1) ||
+		      (trans.indexOf(searchTerm) != -1) ) {
+		    result.push(boxes[i][j]);
 		}
 	    }
 	}
-	return false;
+	return result;
     },
 };
 	
@@ -841,7 +1123,24 @@ dialog = {
             dialog.showTab("OptionContent", "OptionChooser");
         };
 
-	
+	document.getElementById("InfoChooser").innerHTML = window.loc_string.details_info_chooser;
+	document.getElementById("ListChooser").innerHTML = window.loc_string.details_list_chooser;
+	document.getElementById("OptionChooser").innerHTML = window.loc_string.details_option_chooser;
+	document.getElementById("loc_learned").innerHTML = window.loc_string.learned;
+
+	document.getElementById("dialogRemove").innerHTML = window.loc_string.details_options_remove_caption;
+	document.getElementById("dialogRemoveExplain").innerHTML = window.loc_string.details_options_remove_explain;
+	document.getElementById("dialogRevert").innerHTML = window.loc_string.details_options_swap_caption;
+	document.getElementById("dialogRevertExplain").innerHTML = window.loc_string.details_options_swap_explain;
+	document.getElementById("dialogReset").innerHTML = window.loc_string.details_options_reset_caption;
+	document.getElementById("dialogResetExplain").innerHTML = window.loc_string.details_options_reset_explain;
+	document.getElementById("dialogBack").innerHTML = window.loc_string.back_caption;
+
+	document.getElementById("FullPathCaption").innerHTML = window.loc_string.full_path_caption;
+	document.getElementById("AddedCaption").innerHTML = window.loc_string.added_caption;
+	document.getElementById("LastUsedCaption").innerHTML = window.loc_string.last_used_caption;
+	document.getElementById("WordsCountCaption").innerHTML = window.loc_string.words_count_caption;
+	document.getElementById("ProgressCaption").innerHTML = window.loc_string.progress_caption;
 	
 	dialog.hide();
     },
@@ -942,7 +1241,7 @@ dialog = {
 	var fileName = listAPI.elements[id].value;
         document.getElementById("dialogFullPath").innerHTML = fileName;
 	if (listAPI.notAvail[fileName]) {
-	    var fileNameMessage = fileName + "<br><p style='color:red'>This file is not available, please add it again</p>";
+	    var fileNameMessage = fileName + "<br><p style='color:red'>" + loc_string.error_file_not_available + "</p>";
 	    document.getElementById("dialogFullPath").innerHTML = fileNameMessage;
 	}
 	

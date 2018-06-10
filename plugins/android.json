@@ -30,6 +30,9 @@
         },
         "com.manueldeveloper.volume-buttons": {
             "PACKAGE_NAME": "dfranzen.vokabeltrainer"
+        },
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "dfranzen.vokabeltrainer"
         }
     },
     "dependent_plugins": {

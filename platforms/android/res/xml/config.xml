@@ -20,6 +20,10 @@
     <feature name="VolumeButtons">
         <param name="android-package" value="com.manueldeveloper.VolumeButtonsListener" />
     </feature>
+    <feature name="Whitelist">
+        <param name="android-package" value="org.apache.cordova.whitelist.WhitelistPlugin" />
+        <param name="onload" value="true" />
+    </feature>
     <name>VokabelTrainer</name>
     <description>
       Vokabel Trainer inspired by index cards
@@ -30,6 +34,8 @@
     <content src="index.html" />
     <icon src="www/res/Icon.png" />
     <access origin="*" />
+    <access origin="http://eg.lisaanmasry.com" />
+    <allow-navigation href="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
     <allow-intent href="tel:*" />
@@ -48,14 +54,6 @@
     <splash density="port-xhdpi" src="www/res/screen/android/drawable-port-xhdpi-screen.png" />
     <splash density="port-xxhdpi" src="www/res/screen/android/drawable-port-xxhdpi-screen.png" />
     <splash density="port-xxxhdpi" src="www/res/screen/android/drawable-port-xxxhdpi-screen.png" />
-    <config-file parent="./application/activity/intent-filter" target="AndroidManifest.xml">
-        <category android:name="android.intent.category.MULTIWINDOW_LAUNCHER" />
-    </config-file>
-    <config-file parent="./application" target="AndroidManifest.xml">
-        <uses-library android:name="com.sec.android.app.multiwindow" android:required="false" />
-        <meta-data android:name="com.samsung.android.sdk.multiwindow.penwindow.enable" android:value="true" />
-        <meta-data android:name="com.sec.android.support.multiwindow" android:value="true" />
-    </config-file>
     <allow-intent href="market:*" />
     <preference name="loglevel" value="DEBUG" />
     <preference name="DisallowOverscroll" value="true" />
