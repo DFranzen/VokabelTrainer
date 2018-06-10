@@ -30,9 +30,9 @@ menu = {
     preview: {},
     previewCount: 0,
     count:0,
-    sort: "",
-    sortModes: ["recent", "tencer", "alphanum", "munahpla",  "progress", "ssergorp"],
-    sortIcons: ["res/recent.png", "res/tencer.png", "res/a2z.png", "res/z2a.png", "res/progress.png", "res/ssergrop.png"],
+    sort: "recent",
+    sortModes: ["recent", "tnecer", "alphanum", "munahpla",  "progress", "ssergorp"],
+    sortIcons: ["res/recent.png", "res/tnecer.png", "res/a2z.png", "res/z2a.png", "res/progress.png", "res/ssergorp.png"],
 
     init: function() {
     	document.getElementById("InputSearch"). addEventListener("keyup",menu.InputSearch_onKeyUp);
@@ -321,7 +321,7 @@ menu = {
             showID,
             function (boxes) {
                 var i = 0;
-                while (boxes[i].length === 0 && i < 6) {
+                while (i < 6 && boxes[i].length === 0) {
                     i = i + 1;
                 }
                 if (i < 6) {
@@ -360,47 +360,47 @@ menu = {
 	document.getElementById("NumWords").innerHTML = menu.previewCount;
     },
     countWords: function(element,id) {
-	console.log("counting: " + element.value );
-	if (element.selected) {
-	    listAPI.withParsed(
-		id,
-		function(boxes) {
-		    var i;
-		    for (i=0;i<boxes.length;i++) {
-			menu.previewCount += boxes[i].length;
-		    }
-		}
-	    );
-	}
+        console.log("counting: " + element.value );
+        if (element.selected) {
+            listAPI.withParsed(
+            id,
+            function(boxes) {
+                var i;
+                for (i=0;i<boxes.length;i++) {
+                menu.previewCount += boxes[i].length;
+                }
+            }
+            );
+        }
     },
     toggleSearch: function() {
-	var inputSearch = document.getElementById("InputSearch"),
-	    listSearch = document.getElementById("listSearch"),
-	    listFile = document.getElementById("listRecent"),
-	    preview = document.getElementById("preview");
-	
-	if (inputSearch.style.visibility === "inherit") {
-	    inputSearch.style.visibility = "hidden";
-	    listSearch.style.visibility = "hidden";
-	    listFile.style.visibility = "inherit";
-	    preview.style.visibility = "inherit";
-	} else {
-	    inputSearch.style.visibility = "inherit";
-	    listSearch.style.visibility = "inherit";
-	    listFile.style.visibility = "hidden";
-	    preview.style.visibility = "hidden";
-	    inputSearch.select();
-	}
+        var inputSearch = document.getElementById("InputSearch"),
+            listSearch = document.getElementById("listSearch"),
+            listFile = document.getElementById("listRecent"),
+            preview = document.getElementById("preview");
+        
+        if (inputSearch.style.visibility === "inherit") {
+            inputSearch.style.visibility = "hidden";
+            listSearch.style.visibility = "hidden";
+            listFile.style.visibility = "inherit";
+            preview.style.visibility = "inherit";
+        } else {
+            inputSearch.style.visibility = "inherit";
+            listSearch.style.visibility = "inherit";
+            listFile.style.visibility = "hidden";
+            preview.style.visibility = "hidden";
+            inputSearch.select();
+        }
     },
     htmlBGColor: function() {
-	var list = document.getElementById("listRecent").children,
-	    i;
+        var list = document.getElementById("listRecent").children,
+            i;
 
-	for (i = 0; i < list.length; i++) {
-	    if ((i % 2) === 1) {
-		list[i].classList.add("listElementEven");
-	    }
-	}
+        for (i = 0; i < list.length; i++) {
+            if ((i % 2) === 1) {
+            list[i].classList.add("listElementEven");
+            }
+        }
     },
     htmlAdd: function (element, id) {
         'use strict';
@@ -409,19 +409,18 @@ menu = {
             listElement = document.createElement("div"),
             status  = document.createElement("div"),
             statusPercent = document.createElement("div"),
-	    fileName,
-	    list,
-	    childid,
-	    childbefore;
+	        fileName,
+	        list,
+	        childid;
 
 
-	fileName = element.value;
+	    fileName = element.value;
 
         caption.innerHTML = element.caption;
         caption.className = "listCaption";
-	if (listAPI.notAvail[fileName]) {
-	    caption.classList.add("listCaptionNA");
-	}
+	    if (listAPI.notAvail[fileName]) {
+	        caption.classList.add("listCaptionNA");
+	    }
 
         status.className = "listStatusIcon";
         statusPercent.className = "listStatusPercent";
@@ -431,97 +430,85 @@ menu = {
         listElement.appendChild(caption);
 
         classname = "listElement";
-	if (element.selected) {
+	    if (element.selected) {
             classname += " listElementSelected";
-	}
+	    }
         listElement.className = classname;
-	listElement.id="listElement"+menu.count;
-	menu.count ++;
+	    listElement.id="listElement"+menu.count;
+	    menu.count ++;
         listElement.onclick = function () {
             menu.clickHandler(id);
         };
 
         dialog.activateLongpress(listElement, id);
-	if (!navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry)/)) {
-	    window.console.log("Setting dblClick for " + id + ": " + listElement.innerHTML);
+	    if (!navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry)/)) {
+	        window.console.log("Setting dblClick for " + id + ": " + listElement.innerHTML);
             listElement.addEventListener("dblclick", function (e) {
-		menu.onlongclick(id,listElement);
+		        menu.onlongclick(id,listElement);
             });
-	}
-	listElement.addEventListener("longclick", function () {  //Just to be able to trigger it programmatically
-	    menu.onlongclick(id,listElement);
+	    }
+	    listElement.addEventListener("longclick", function () {  //Just to be able to trigger it programmatically
+	        menu.onlongclick(id,listElement);
         });
 	    
 
-	list = document.getElementById("listRecent");
+	    list = document.getElementById("listRecent");
 
-	childid = list.children.length; // default is to insert at the end
+	    childid = list.children.length; // default is to insert at the end
 
-	if (menu.sort === "alphanum") {
-	    childid = 0;
-	    while ( (childid < list.children.length) &&
-		    (list.children[childid].children[2].innerHTML.toLowerCase() < element.caption.toLowerCase()) ) {
-		childid ++
-	    }
-	} else if (menu.sort === "munahpla") {
-	    childid = 0;
-	    while ( (childid < list.children.length) &&
-		    (list.children[childid].children[2].innerHTML >= element.caption) ) {
-		childid ++
-	    }
-	} else if (menu.sort === "tencer") {
-	    childid = 0;
-	}
-	
-	if ( childid < list.children.length ) {
-	    list.insertBefore(listElement,list.children[childid]);
-	} else {
-	    //either recent or will be done in showProgress
-	    list.appendChild(listElement);
-	}
+        if (menu.sort === "alphanum") {
+            childid = 0;
+            while ( (childid < list.children.length) &&
+                (list.children[childid].children[2].innerHTML.toLowerCase() < element.caption.toLowerCase()) ) {
+            childid ++
+            }
+        } else if (menu.sort === "munahpla") {
+            childid = 0;
+            while ( (childid < list.children.length) &&
+                (list.children[childid].children[2].innerHTML >= element.caption) ) {
+            childid ++
+            }
+        } else if (menu.sort === "tnecer") {
+            childid = 0;
+        }
+        
+        if ( childid < list.children.length ) {
+            list.insertBefore(listElement,list.children[childid]);
+        } else {
+            //either recent or will be done in showProgress
+            list.appendChild(listElement);
+        }
 
         listAPI.withParsed(element.value, function (boxes) {
             menu.showProgress(boxes, status, statusPercent);
         });
-
-	//update searching: old code, moved to updateResult
-	/*listAPI.withParsed(element.value, function(boxes) {
-	    var inputSearch = document.getElementById("InputSearch");
-	    var searchTerm = inputSearch.value;
-	    if (inputSearch.value !== "") {
-		finds = listAPI.findInOne(boxes,searchTerm); 
-		if (finds.length > 0) {
-		    listElement.classList.add("listElementDisabled");
-		}
-	    }
-	});*/
     },
 
     showSortButton: function() {
-	var i;
-	for ( i = 0; i < menu.sortModes.length; i++ ) {
-	    if ( menu.sort === menu.sortModes[i] ) {
-		document.getElementById("ButtonSort").src = menu.sortIcons[i];
-		break;
-	    }
-	}
+        var i;
+        for ( i = 0; i < menu.sortModes.length; i++ ) {
+            if ( menu.sort === menu.sortModes[i] ) {
+                document.getElementById("ButtonSort").src = menu.sortIcons[i];
+                break;
+            }
+        }
     },
     toggleSort: function() {
-	var i;
-	console.log("changing sort");
-	for ( i = 0; i < menu.sortModes.length; i++ ) {
-	    if ( menu.sort === menu.sortModes[i] ) {
-		break;
-	    }
-	}
-	
-	if ( i >= menu.sortModes.length - 1 ) {
-	    menu.sort = menu.sortModes[ 0 ];
-	} else {
-	    menu.sort = menu.sortModes[ i + 1 ];
-	}
-	console.log("new Sort by: " + menu.sort);
-	menu.show();
+        var i;
+        console.log("changing sort");
+        for ( i = 0; i < menu.sortModes.length; i++ ) {
+            if ( menu.sort === menu.sortModes[i] ) {
+            break;
+            }
+        }
+        
+        if ( i >= menu.sortModes.length - 1 ) {
+            menu.sort = menu.sortModes[ 0 ];
+        } else {
+            menu.sort = menu.sortModes[ i + 1 ];
+        }
+        console.log("new Sort by: " + menu.sort);
+        menu.show();
     },
     toggleVowel: function() {
 	'use strict';
@@ -602,10 +589,11 @@ menu = {
     },
     clickHandler: function (id) {
         'use strict';
+        listAPI.forceReload(listAPI.elements[id]);
         listAPI.toggle(id);
         menu.show();
 
-	menu.updatePreview(id, listAPI.elements[listAPI.getId(id)].selected);
+	    menu.updatePreview(id, listAPI.elements[listAPI.getId(id)].selected);
     },
     onlongclick: function (id,htmlElement) {
         'use strict';
@@ -907,7 +895,7 @@ listAPI = {
         var loadFile, loadFileEntry;
 
         if (fileName === "test") {
-            listAPI.data[fileName] = "عين / عيون;Auge" + "\n-\n" +
+            listAPI.data[fileName] = "عين(Test) / عيون;Auge" + "\n-\n" +
 		"كلمة;word\nحُمّى;Fieber\nبوْل;Urin\nعمود فقري;Wirbelsäule\nصدر / صدور;Brust\nعضو / أعضا" + 
 		"ء;Körperteil, Organ\nشفه / شفاه;Lippe\nعُنُق / أعناق;Hals";
             ready(listAPI.data[fileName]);
@@ -925,7 +913,10 @@ listAPI = {
 		    listAPI.data[fileName] = "";
 		    ready("");
 		} else {
-                    window.alert(loc_string.error_while_reading_file + error);
+            window.alert(loc_string.error_while_reading_file + error);
+            listAPI.notAvail[fileName] = true;
+            listAPI.data[fileName] = "";
+            ready("");
 		}
             }, fileName);
         }
@@ -934,9 +925,10 @@ listAPI = {
     /* forces all data for an element to be reloaded */
     forceReload: function (element) {
         'use strict';
+        console.log("Reloading");
         delete listAPI.data[element];
         delete listAPI.parsed[element];
-	delete listAPI.notAvail[element];
+	    delete listAPI.notAvail[element];
     },
     /* convert a box of words into a string, ready to be written to the file
      *   box: array of word objects to be written
