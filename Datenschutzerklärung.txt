@@ -1,0 +1,8 @@
+Sammlung Personalisierter Informationen in der App:
+---------------------------------------------------
+Diese App sammelt oder speichert keine personalisierten Daten.
+
+Sammlung Personalisierter Informationen durch benutzte Dienste:
+---------------------------------------------------------------
+Wenn diese App über Google Play installiert wurde, speichert Google Play einige personalisierten Daten. Die Datenschutzerklärung für Google Play ist hier zu finden: https://policies.google.com/privacy
+Wenn die Vokabel Sammlungen über Dropbox gespeichert werden, speichert Dropbox einige personalisierten Daten. Die Datenschutzerklärung für Dropbox ist hier zu finden: https://www.dropbox.com/de/privacy
