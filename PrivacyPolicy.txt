@@ -1,0 +1,8 @@
+Personal data collected by the app:
+-----------------------------------
+This application does not collect or store personal data.
+
+Personal data collected by used services:
+-----------------------------------------
+If you installed this application from Google Play, then Google Play does collect some personal data. Please see the privacy policy for Google Play Services here: https://policies.google.com/privacy
+If you use Dropbox to store your word collections, Dropbox might collect some personal data. Please see the privacy policy for Dropbox here: https://www.dropbox.com/de/privacy
